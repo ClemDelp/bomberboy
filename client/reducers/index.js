@@ -3,14 +3,14 @@
 //
 
 import { combineReducers } from 'redux'
-import demo from './demo'
+import game from './game'
 
 //
 // COMBINE
 //
 
 const rootReducer = combineReducers({
-  demo
+  game
 })
 
 //

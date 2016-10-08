@@ -4,18 +4,17 @@
 
 import React from 'react'
 import { connect } from 'react-redux'
-import Footer from '../components/Footer'
-import Header from '../components/Header'
-import GameCanvas from '../components/GameCanvas'
+import GameCanvas from './GameCanvas'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider'
 import injectTapEventPlugin from 'react-tap-event-plugin'
+import Loading from '../components/Loading'
 injectTapEventPlugin()
 
 //
 // COMPONENT
 //
 
-const Index = () => {
+const Index = ({map}) => {
   const styles = {
     header: {
       height: '10vh'
@@ -30,22 +29,20 @@ const Index = () => {
   }
   return (
     <MuiThemeProvider>
-      <div>
-        <div className='row'>
-          <div style={styles.header} className='col-xs-12 col-sm-12 col-md-12 col-lg-12'>
-            <Header />
+      <div style={{
+        height: '100vh',
+        width: '100vh'
+      }}>
+      {
+        map.matrix
+        ? <div className='row'>
+            <div style={styles.body} className='col-xs-12 col-sm-12 col-md-12 col-lg-12'>
+              <GameCanvas />
+            </div>
           </div>
-        </div>
-        <div className='row'>
-          <div style={styles.body} className='col-xs-12 col-sm-12 col-md-12 col-lg-12'>
-            <GameCanvas />
-          </div>
-        </div>
-        <div className='row'>
-          <div style={styles.footer} className='col-xs-12 col-sm-12 col-md-12 col-lg-12'>
-            <Footer />
-          </div>
-        </div>
+        : <Loading />
+
+      }
       </div>
     </MuiThemeProvider>
   )
@@ -55,8 +52,8 @@ const Index = () => {
 // CONNECT
 //
 
-function mapStateToProps ({demo: {hellos}}) {
-  return {hellos}
+function mapStateToProps ({game: {map}}) {
+  return {map}
 }
 
 export default connect(

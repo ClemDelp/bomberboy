@@ -1,10 +1,11 @@
 import {guid} from './utils'
+import {config} from './config'
 
 export default class Map {
   constructor(height, width) {
-    console.log('pouettttete')
-    this.height = height
-    this.width = width
+    this.height = config.mapHeight
+    this.width = config.mapWidth
+    this.cubeSize = config.cubeSize
     // create the matrix
     this.matrix = []
     for(var i=0; i<this.width; i++) {

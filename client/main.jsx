@@ -6,7 +6,8 @@ import { Meteor } from 'meteor/meteor'
 import rootReducer from './reducers'
 import Root from './containers/Root'
 import ReactDOM from 'react-dom'
-import {addScore} from './reducers/demo'
+import {apiRequest} from './utils/api'
+import {mergeIntoGameState} from './reducers/game'
 
 //
 // SAGA
@@ -18,7 +19,6 @@ const sagaMiddleware = createSagaMiddleware()
 //
 // STORE
 //
-
 const store = createStore(
   rootReducer,
   compose(
@@ -33,21 +33,26 @@ sagaMiddleware.run(rootSaga)
 //
 // APP
 //
-
 Meteor.startup(() => {
   // mount app
 	const reactDivElement = document.getElementById('render-target')
 	if (reactDivElement) {
 		ReactDOM.render(<Root store={store} />, reactDivElement)
+    // GET CONTEXT GAME
+    apiRequest('/getContextGame', {method: 'GET'}, (response) => {
+      if (response.data) {
+        const {map} = response.data
+        if (map) store.dispatch(mergeIntoGameState({map: map}))
+      }
+    })
 	}
 })
 
 //
-// STREAMS
+// STREAM
 //
-
 Streamy.on('scoreStream', function (score) {
-  store.dispatch(addScore(score))
+
 })
 
 //
