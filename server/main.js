@@ -17,7 +17,10 @@ if(Meteor.isServer) {
 		let map = new Map(10, 10)
 
 		// BRODCAST LOOP
-		// Streamy.broadcast('scoreStream', {'y': y, 'date': new Date().toLocaleTimeString()})
+		// setInterval(function () {
+		// 	const y = Math.floor(Math.random() * 10)
+		// 	Streamy.broadcast('gameStream', {'y': y, 'date': new Date().toLocaleTimeString()})
+		// }, 1000)
 
 		// ROUTE
 		app.get('/getContextGame', function (req, res) {
