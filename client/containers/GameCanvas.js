@@ -33,7 +33,7 @@ class GameCanvas extends React.Component {
     for (var y = 0; y < map.matrix.length; y++) {
       const row = map.matrix[y]
       for (var x = 0; x < row.length; x++) {
-        if (row[x] !== 0) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
+        if (row[x].val !== 0) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
       }
     }
     game.add.text(0, 0, "this text scrolls\nwith the background", { font: "32px Arial", fill: "#f26c4f", align: "center" });
@@ -52,7 +52,7 @@ class GameCanvas extends React.Component {
 
   update () {
     const {game} = this.state
-    console.log('mapWidth---->', this.props.map.width)
+    // console.log('mapWidth---->', this.props.map.width)
     if (cursors.up.isDown) game.camera.y -= 4;
     else if (cursors.down.isDown) game.camera.y += 4;
     if (cursors.left.isDown) game.camera.x -= 4;
