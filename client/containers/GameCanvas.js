@@ -20,33 +20,24 @@ class GameCanvas extends React.Component {
     const {game} = this.state
     game.stage.backgroundColor = '#007236';
     game.load.image('mushroom', 'assets/sprites/mushroom2.png');
-    game.load.image('sonic', 'assets/sprites/sonic_havok_sanity.png');
-    game.load.image('phaser', 'assets/sprites/phaser1.png');
+    game.load.image('ghost', 'assets/sprites/ghost-icon.png');
   }
 
   create () {
     const {game} = this.state
     const {map} = this.props
     //  Modify the world and camera bounds
-    game.world.setBounds(-1000, -1000, 2000, 2000);
+    game.world.setBounds(-50, -50, 2000, 2000);
     // build the map
     for (var y = 0; y < map.matrix.length; y++) {
       const row = map.matrix[y]
       for (var x = 0; x < row.length; x++) {
-        if (row[x].val !== 0) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
+        // DIRECTELY USE A TYPE PARAMETER LIKE THIS:
+        // game.add.sprite(x, y, TYPE)
+        if (row[x].val === 1) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
+        else if (row[x].val === 2) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'ghost');
       }
     }
-    game.add.text(0, 0, "this text scrolls\nwith the background", { font: "32px Arial", fill: "#f26c4f", align: "center" });
-    logo1 = game.add.sprite(0, 0, 'phaser');
-    logo1.fixedToCamera = true;
-    logo1.cameraOffset.setTo(100, 100);
-    logo2 = game.add.sprite(0, 0, 'phaser');
-    logo2.fixedToCamera = true;
-    logo2.cameraOffset.setTo(500, 100);
-    var t = game.add.text(0, 0, "this text is fixed to the camera", { font: "32px Arial", fill: "#ffffff", align: "center" });
-    t.fixedToCamera = true;
-    t.cameraOffset.setTo(200, 500);
-    game.add.tween(logo2.cameraOffset).to( { y: 400 }, 2000, Phaser.Easing.Back.InOut, true, 0, 2000, true);
     cursors = game.input.keyboard.createCursorKeys()
   }
 
