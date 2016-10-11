@@ -7,6 +7,9 @@ import {connect} from 'react-redux'
 //
 // COMPONENT
 //
+
+var bobs = {} // --> all the moving elements
+
 class GameCanvas extends React.Component {
   constructor (props) {
     super(props)
@@ -14,6 +17,14 @@ class GameCanvas extends React.Component {
     this.preload = this.preload.bind(this)
     this.update = this.update.bind(this)
     this.renderCanvas = this.renderCanvas.bind(this)
+    this.getGhostBuffer = this.getGhostBuffer.bind(this)
+    this.state = {
+      ghostBuffer: props.ghostBuffer
+    }
+  }
+
+  getGhostBuffer () {
+      return this.state.getGhostBuffer
   }
 
   preload () {
@@ -32,17 +43,24 @@ class GameCanvas extends React.Component {
     for (var y = 0; y < map.matrix.length; y++) {
       const row = map.matrix[y]
       for (var x = 0; x < row.length; x++) {
+        const element = row[x]
         // DIRECTELY USE A TYPE PARAMETER LIKE THIS:
         // game.add.sprite(x, y, TYPE)
-        if (row[x].val === 1) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
-        else if (row[x].val === 2) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'ghost');
+        if (element.val === 1) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
+        else if (element.val === 2) {
+          const newGhost = game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'ghost')
+          bobs[element.id] = newGhost
+        }
       }
     }
     cursors = game.input.keyboard.createCursorKeys()
   }
 
   update () {
-    const {game} = this.state
+    const {game, ghostBuffer} = this.state
+    if (ghostBuffer && ghostBuffer.position) {
+      bobs[ghostBuffer.id].x = ghostBuffer.position.x
+    }
     // console.log('mapWidth---->', this.props.map.width)
     if (cursors.up.isDown) game.camera.y -= 4;
     else if (cursors.down.isDown) game.camera.y += 4;
@@ -81,6 +99,11 @@ class GameCanvas extends React.Component {
 
   }
 
+  componentWillReceiveProps (nextProps) {
+      // console.log('nextProps', nextProps)
+      this.setState({ghostBuffer: nextProps.ghostBuffer})
+  }
+
   render () {
     return (
       <div id='phaser-example'></div>
@@ -91,8 +114,10 @@ class GameCanvas extends React.Component {
 //
 // EXPORT
 //
-function mapStateToProps ({game: {map}}) {
-  return {map}
+function mapStateToProps ({
+  game: {map, ghostBuffer}
+}) {
+  return {map, ghostBuffer}
 }
 
 export default connect(

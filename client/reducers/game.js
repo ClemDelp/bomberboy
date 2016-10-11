@@ -8,7 +8,7 @@ export const MERGE_INTO_GAME_STATE = 'MERGE_INTO_GAME_STATE'
 //
 const intialState = {
   map: [],
-  ghostsLayer: []
+  ghostBuffer: []
 }
 
 //

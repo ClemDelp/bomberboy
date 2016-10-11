@@ -18,11 +18,24 @@ if(Meteor.isServer) {
 		// GAME
 		const game = new Game()
 		game.createGhostLayer()
+
 		// BRODCAST LOOP
-		// setInterval(function () {
-		// 	const y = Math.floor(Math.random() * 10)
-		// 	Streamy.broadcast('gameStream', {'y': y, 'date': new Date().toLocaleTimeString()})
-		// }, 1000)
+		var i = 0
+		setInterval(function () {
+			const idTarget = Object.keys(game.ghostsById)[0]
+			const ghost = game.ghostsById[idTarget]
+			Streamy.broadcast('gameStream', {
+				ghostBuffer: {
+					id: ghost.id,
+					position: {
+						x: ghost.x + 32 * i,
+						y: ghost.y + 32 * i
+					}
+				}
+			})
+			i++
+			if (i > 10) i = 0
+		}, 2000)
 
 		// ROUTE
 		app.get('/getContextGame', function (req, res) {

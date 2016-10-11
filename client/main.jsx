@@ -45,14 +45,11 @@ Meteor.startup(() => {
         if (map) store.dispatch(mergeIntoGameState({map}))
       }
     })
+    // STREAM
+    Streamy.on('gameStream', function (data) {
+      if (data.ghostBuffer) store.dispatch(mergeIntoGameState({ghostBuffer: data.ghostBuffer}))
+    })
 	}
-})
-
-//
-// STREAM
-//
-Streamy.on('scoreStream', function (score) {
-
 })
 
 //
