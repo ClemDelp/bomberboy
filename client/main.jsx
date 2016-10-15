@@ -7,7 +7,7 @@ import rootReducer from './reducers'
 import Root from './containers/Root'
 import ReactDOM from 'react-dom'
 import {apiRequest} from './utils/api'
-import {mergeIntoGameState} from './reducers/game'
+import {mergeIntoGameState, pushToBuffer} from './reducers/game'
 
 //
 // SAGA
@@ -49,13 +49,6 @@ Meteor.startup(() => {
 })
 
 //
-// STREAM
-//
-Streamy.on('scoreStream', function (score) {
-
-})
-
-//
 // DEBUGS
 // Since we don't want all those debug messages
 Meteor._debug = (function (super_meteor_debug) {
@@ -63,4 +56,4 @@ Meteor._debug = (function (super_meteor_debug) {
     if (!(info && _.has(info, 'msg')))
       super_meteor_debug(error, info)
   }
-})(Meteor._debug);
+})(Meteor._debug)
