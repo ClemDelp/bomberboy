@@ -7,7 +7,7 @@ import rootReducer from './reducers'
 import Root from './containers/Root'
 import ReactDOM from 'react-dom'
 import {apiRequest} from './utils/api'
-import {mergeIntoGameState} from './reducers/game'
+import {mergeIntoGameState, pushToBuffer} from './reducers/game'
 
 //
 // SAGA
@@ -45,10 +45,6 @@ Meteor.startup(() => {
         if (map) store.dispatch(mergeIntoGameState({map}))
       }
     })
-    // STREAM
-    Streamy.on('gameStream', function (data) {
-      if (data.ghostBuffer) store.dispatch(mergeIntoGameState({ghostBuffer: data.ghostBuffer}))
-    })
 	}
 })
 
@@ -60,4 +56,4 @@ Meteor._debug = (function (super_meteor_debug) {
     if (!(info && _.has(info, 'msg')))
       super_meteor_debug(error, info)
   }
-})(Meteor._debug);
+})(Meteor._debug)

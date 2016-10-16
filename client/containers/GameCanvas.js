@@ -5,10 +5,23 @@ import React from 'react'
 import {connect} from 'react-redux'
 
 //
+// ENV
+//
+const BUFFER_LIMIT = 10
+let buffer = []
+
+//
+// STREAM
+//
+Streamy.on('gameStream', function (response) {
+  if (response && buffer.length < BUFFER_LIMIT) buffer.push(response.data)
+})
+
+//
 // COMPONENT
 //
 
-var bobs = {} // --> all the moving elements
+var ghosts = {} // --> all the moving elements
 
 class GameCanvas extends React.Component {
   constructor (props) {
@@ -29,16 +42,16 @@ class GameCanvas extends React.Component {
 
   preload () {
     const {game} = this.state
-    game.stage.backgroundColor = '#007236';
-    game.load.image('mushroom', 'assets/sprites/mushroom2.png');
-    game.load.image('ghost', 'assets/sprites/ghost-icon.png');
+    game.stage.backgroundColor = '#007236'
+    game.load.image('mushroom', 'assets/sprites/mushroom2.png')
+    game.load.image('ghost', 'assets/sprites/ghost-icon.png')
   }
 
   create () {
     const {game} = this.state
     const {map} = this.props
     //  Modify the world and camera bounds
-    game.world.setBounds(-50, -50, 2000, 2000);
+    game.world.setBounds(-50, -50, 2000, 2000)
     // build the map
     for (var y = 0; y < map.matrix.length; y++) {
       const row = map.matrix[y]
@@ -49,7 +62,7 @@ class GameCanvas extends React.Component {
         if (element.val === 1) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
         else if (element.val === 2) {
           const newGhost = game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'ghost')
-          bobs[element.id] = newGhost
+          ghosts[element.id] = newGhost
         }
       }
     }
@@ -57,10 +70,15 @@ class GameCanvas extends React.Component {
   }
 
   update () {
-    const {game, ghostBuffer} = this.state
-    if (ghostBuffer && ghostBuffer.position) {
-      bobs[ghostBuffer.id].x = ghostBuffer.position.x
+    if (buffer.length > 0) {
+      const element = buffer.shift()
+      if (element.type === 'ghost') {
+        ghosts[element.id].x = element.x
+        ghosts[element.id].y = element.y
+      }
     }
+    const {game} = this.state
+
     // console.log('mapWidth---->', this.props.map.width)
     if (cursors.up.isDown) game.camera.y -= 4;
     else if (cursors.down.isDown) game.camera.y += 4;

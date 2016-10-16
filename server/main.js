@@ -20,18 +20,19 @@ if(Meteor.isServer) {
 		game.createGhostLayer()
 
 		// BRODCAST LOOP
-		var i = 0
+		let i = 0
 		setInterval(function () {
-			const idTarget = Object.keys(game.ghostsById)[0]
-			const ghost = game.ghostsById[idTarget]
-			Streamy.broadcast('gameStream', {
-				ghostBuffer: {
-					id: ghost.id,
-					position: {
-						x: ghost.x + 32 * i,
-						y: ghost.y + 32 * i
-					}
+			Object.keys(game.ghostsById).map((id, index) => {
+				let ghost = game.ghostsById[id]
+				const oneOrTwo = Math.floor(Math.random() * 2) + 1
+				if (oneOrTwo === 1) {
+					// update x
+					ghost.x = ghost.x + (i * 32)
+				} else {
+					// update y
+					ghost.y = ghost.y + (i * 32)
 				}
+				Streamy.broadcast('gameStream', {data: ghost})
 			})
 			i++
 			if (i > 10) i = 0
@@ -41,7 +42,7 @@ if(Meteor.isServer) {
 		app.get('/getContextGame', function (req, res) {
 			console.log('send context to new user')
 			const context = {
-				map: game.map,
+				map: game.map
 			}
 			res.json({data: context})
 		})
@@ -50,7 +51,7 @@ if(Meteor.isServer) {
 
 
 class Game {
-  constructor(map) {
+  constructor (map) {
 		this.map = new Map(10, 10)
 		this.ghostsById = {}
   }
