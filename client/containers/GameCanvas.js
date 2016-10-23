@@ -49,23 +49,28 @@ class GameCanvas extends React.Component {
 
   create () {
     const {game} = this.state
-    const {map} = this.props
+    const {layers} = this.props
     //  Modify the world and camera bounds
     game.world.setBounds(-50, -50, 2000, 2000)
-    // build the map
-    for (var y = 0; y < map.matrix.length; y++) {
-      const row = map.matrix[y]
-      for (var x = 0; x < row.length; x++) {
-        const element = row[x]
-        // DIRECTELY USE A TYPE PARAMETER LIKE THIS:
-        // game.add.sprite(x, y, TYPE)
-        if (element.val === 1) game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'mushroom');
-        else if (element.val === 2) {
-          const newGhost = game.add.sprite(x * map.cubeSize, y * map.cubeSize, 'ghost')
-          ghosts[element.id] = newGhost
+    // RENDER EACH LAYER
+    if (layers) {
+      Object.keys(layers).forEach((layerName, index) => {
+        const layer = layers[layerName]
+        for (var y = 0; y < layer.matrix.length; y++) {
+          for (var x = 0; x < layer.matrix[y].length; x++) {
+            const element = layer.matrix[y][x]
+            // DIRECTELY USE A TYPE PARAMETER LIKE THIS:
+            // game.add.sprite(x, y, TYPE)
+            if (element.val === 1) game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'mushroom');
+            else if (element.val === 2) {
+              const newGhost = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'ghost')
+              ghosts[element.id] = newGhost
+            }
+          }
         }
-      }
+      })
     }
+
     cursors = game.input.keyboard.createCursorKeys()
   }
 
@@ -78,8 +83,6 @@ class GameCanvas extends React.Component {
       }
     }
     const {game} = this.state
-
-    // console.log('mapWidth---->', this.props.map.width)
     if (cursors.up.isDown) game.camera.y -= 4;
     else if (cursors.down.isDown) game.camera.y += 4;
     if (cursors.left.isDown) game.camera.x -= 4;
@@ -107,9 +110,7 @@ class GameCanvas extends React.Component {
         update: this.update,
         render : this.renderCanvas
       })
-    this.setState({
-      game: game
-    })
+    this.setState({game})
   }
 
   // after first time
@@ -133,9 +134,9 @@ class GameCanvas extends React.Component {
 // EXPORT
 //
 function mapStateToProps ({
-  game: {map, ghostBuffer}
+  game: {layers}
 }) {
-  return {map, ghostBuffer}
+  return {layers}
 }
 
 export default connect(

@@ -41,8 +41,8 @@ Meteor.startup(() => {
     // GET CONTEXT GAME
     apiRequest('/getContextGame', {method: 'GET'}, (response) => {
       if (response.data) {
-        const {map} = response.data
-        if (map) store.dispatch(mergeIntoGameState({map}))
+        const {layers} = response.data
+        if (layers) store.dispatch(mergeIntoGameState({layers}))
       }
     })
 	}

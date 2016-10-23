@@ -7,8 +7,7 @@ export const MERGE_INTO_GAME_STATE = 'MERGE_INTO_GAME_STATE'
 // INITIAL STATE
 //
 const intialState = {
-  map: [],
-  buffer: []
+  layers: []
 }
 
 //

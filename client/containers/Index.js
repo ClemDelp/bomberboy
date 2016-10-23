@@ -14,7 +14,7 @@ injectTapEventPlugin()
 // COMPONENT
 //
 
-const Index = ({map}) => {
+const Index = ({layers}) => {
   const styles = {
     header: {
       height: '10vh'
@@ -34,7 +34,7 @@ const Index = ({map}) => {
         width: '100vh'
       }}>
       {
-        map.matrix
+        Object.keys(layers).length > 0
         ? <div className='row'>
             <div style={styles.body} className='col-xs-12 col-sm-12 col-md-12 col-lg-12'>
               <GameCanvas />
@@ -52,8 +52,8 @@ const Index = ({map}) => {
 // CONNECT
 //
 
-function mapStateToProps ({game: {map}}) {
-  return {map}
+function mapStateToProps ({game: {layers}}) {
+  return {layers}
 }
 
 export default connect(

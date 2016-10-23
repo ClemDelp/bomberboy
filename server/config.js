@@ -1,6 +1,6 @@
 export const config = {
-  mapHeight: 100,
-  mapWidth: 100,
+  mapHeight: 5,
+  mapWidth: 5,
   cubeSize: 40,
-  initGhostNumber: 100
+  initGhostNumber: 2
 }
