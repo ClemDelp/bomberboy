@@ -21,7 +21,7 @@ Streamy.on('gameStream', function (response) {
 // COMPONENT
 //
 
-var ghosts = {} // --> all the moving elements
+var ghostsById = {} // --> all the moving elements
 
 class GameCanvas extends React.Component {
   constructor (props) {
@@ -64,13 +64,13 @@ class GameCanvas extends React.Component {
             if (element.val === 1) game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'mushroom');
             else if (element.val === 2) {
               const newGhost = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'ghost')
-              ghosts[element.id] = newGhost
+              ghostsById[element.id] = newGhost
             }
           }
         }
       })
     }
-
+    console.log('ghostsByIdById ---> ', ghostsById)
     cursors = game.input.keyboard.createCursorKeys()
   }
 
@@ -78,8 +78,9 @@ class GameCanvas extends React.Component {
     if (buffer.length > 0) {
       const element = buffer.shift()
       if (element.type === 'ghost') {
-        ghosts[element.id].x = element.x
-        ghosts[element.id].y = element.y
+        console.log('element --> ', element)
+        ghostsById[element.id].x = element.x
+        ghostsById[element.id].y = element.y
       }
     }
     const {game} = this.state

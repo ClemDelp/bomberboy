@@ -19,9 +19,14 @@ export default class Layer {
         }
     }
   }
-  moveElement (from, to) {
-    const oldVal = this.matrix[from.y][from.x].val
-		this.matrix[from.y][from.x].val = 0
-		this.matrix[to.y][to.x].val = oldVal
+  setVal (x, y, val) {
+    this.matrix[y][x].val = val
+  }
+  translation (from, to) {
+		this.matrix[to.y][to.x] = Object.assign({}, this.matrix[from.y][from.x])
+    this.matrix[from.y][from.x].val = {
+      id : guid(),
+      val : 0
+    }
 	}
 }
