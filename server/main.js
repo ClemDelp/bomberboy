@@ -85,7 +85,8 @@ class Game {
 		// Check on all layers
 		Object.keys(this.layers).forEach((layerName) => {
 			const layer = this.layers[layerName]
-			if (!stop && _.indexOf(canHover, layer.matrix[y][x].val) > -1) free = true
+			console.log('eeeeee ---> ', ' x :', x, ' y : ', y)
+			if (!stop && _.indexOf(canHover, layer.matrix[y][x].val) > - 1) free = true
 			else {
 				free = false
 				stop = true
@@ -117,66 +118,71 @@ class Game {
 		var x = ghost.x
 		var y = ghost.y
 		if((y + 1) < config.mapHeight && this.isFreePosition(x, y + 1, ghost.canHover)){
+			console.log('down')
 			// vers le sud
 			var from = { x: x, y: y }
 			ghost.orientation = "down"
 			ghost.y++
 			var to = { x: ghost.x, y: ghost.y }
 			layer.translation(from, to)
-			console.log('move down... ')
 			this.dispatchMouvement(ghost)
 			return true
 		}else{
 			return false
 		}
 	}
-	right () { return false }
-	// 	var x = this.x
-	// 	var y = this.y
-	// 	if((x+1<this.map.cols)&&(this.map.matrix[y][x+1].val == 0)){
-	// 		// vers l'est
-	// 		var from = {x:x,y:y}
-	// 		this.orientation = "right"
-	// 		this.x++
-	// 		var to = {x:this.x,y:this.y}
-	// 		this.bob_updated.dispatch(this.getModel())
-	// 		this.map.moveBot(from,to)
-	//
-	// 		return true
-	// 	}else{
-	// 		return false
-	// 	}
-	// }
-	up () { return false }
-	// 	var x = this.x
-	// 	var y = this.y
-	// 	if((y-1>0)&&(this.map.matrix[y-1][x].val == 0)){
-	// 		// vers le nord
-	// 		var from = {x:x,y:y}
-	// 		this.orientation = "up"
-	// 		this.y--
-	// 		var to = {x:this.x,y:this.y}
-	// 		this.bob_updated.dispatch(this.getModel())
-	// 		this.map.moveBot(from,to)
-	// 		return true
-	// 	}else{
-	// 		return false
-	// 	}
-	// }
-	left () { return false }
-	// 	var x = this.x
-	// 	var y = this.y
-	// 	if((x-1>0)&&(this.map.matrix[y][x-1].val == 0)){
-	// 		// vers l'ouest
-	// 		var from = {x:x,y:y}
-	// 		this.orientation = "left"
-	// 		this.x--
-	// 		var to = {x:this.x,y:this.y}
-	// 		this.bob_updated.dispatch(this.getModel())
-	// 		this.map.moveBot(from,to)
-	// 		return true
-	// 	}else{
-	// 		return false
-	// 	}
-	// }
+	up (ghost) {
+		const layer = this.layers.ghost
+		var x = ghost.x
+		var y = ghost.y
+		if((y - 1) > 0 && this.isFreePosition(x, y - 1, ghost.canHover)) {
+			console.log('up')
+			// to the rigth
+			var from = { x: x, y: y }
+			ghost.orientation = "up"
+			ghost.y--
+			var to = { x: ghost.x, y: ghost.y }
+			layer.translation(from, to)
+			this.dispatchMouvement(ghost)
+			return true
+		}else{
+			return false
+		}
+	}
+	right (ghost) {
+		const layer = this.layers.ghost
+		var x = ghost.x
+		var y = ghost.y
+		if((x + 1) < config.mapWidth && this.isFreePosition(x + 1, y, ghost.canHover)) {
+			console.log('right')
+			// to the rigth
+			var from = { x: x, y: y }
+			ghost.orientation = "right"
+			ghost.x++
+			var to = { x: ghost.x, y: ghost.y }
+			layer.translation(from, to)
+			this.dispatchMouvement(ghost)
+			return true
+		}else{
+			return false
+		}
+	}
+	left (ghost) {
+		const layer = this.layers.ghost
+		var x = ghost.x
+		var y = ghost.y
+		if((x - 1) > 0 && this.isFreePosition(x - 1, y, ghost.canHover)) {
+			console.log('left')
+			// to the left
+			var from = { x: x, y: y }
+			ghost.orientation = "left"
+			ghost.x--
+			var to = { x: ghost.x, y: ghost.y }
+			layer.translation(from, to)
+			this.dispatchMouvement(ghost)
+			return true
+		}else{
+			return false
+		}
+	}
 }

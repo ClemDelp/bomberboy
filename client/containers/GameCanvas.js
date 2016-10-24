@@ -70,7 +70,6 @@ class GameCanvas extends React.Component {
         }
       })
     }
-    console.log('ghostsByIdById ---> ', ghostsById)
     cursors = game.input.keyboard.createCursorKeys()
   }
 
@@ -79,8 +78,8 @@ class GameCanvas extends React.Component {
       const element = buffer.shift()
       if (element.type === 'ghost') {
         console.log('element --> ', element)
-        ghostsById[element.id].x = element.x
-        ghostsById[element.id].y = element.y
+        ghostsById[element.id].x = element.x * 32
+        ghostsById[element.id].y = element.y * 32
       }
     }
     const {game} = this.state
