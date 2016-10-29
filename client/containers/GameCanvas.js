@@ -80,10 +80,11 @@ class GameCanvas extends React.Component {
             }
             else if (element.val === 2) { // GHOST
               const newGhost = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'ghost')
+              newGhost.anchor.setTo(-0.9, -0.9);
               ghostsById[element.id] = newGhost
             }
             else if (element.val === 3) { // PLAYER
-              if (element.id === player.id) { // It's the main player
+              if (element.id === player.id) { // If it's the main player
                 mainPlayer = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'phaser')
                 game.physics.arcade.enable(mainPlayer);
                 game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -107,9 +108,10 @@ class GameCanvas extends React.Component {
     if (buffer.length > 0) {
       const element = buffer.shift()
       if (element.type === 'ghost') {
-        console.log('element --> ', element)
-        ghostsById[element.id].x = element.x * 32
-        ghostsById[element.id].y = element.y * 32
+        // console.log('element --> ', element)
+        const coef = 95 * 0.4
+        ghostsById[element.id].x = element.x * coef
+        ghostsById[element.id].y = element.y * coef
       }
     }
     // MAIN USER DEPLACEMENTS

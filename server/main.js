@@ -5,6 +5,7 @@ import Layer from './layer'
 import {config} from './config'
 import {Ghost, Player} from './ghost'
 import {guid} from './utils'
+const Promise = require('promise')
 
 if(Meteor.isServer) {
 	Meteor.startup(() => {
@@ -30,7 +31,6 @@ if(Meteor.isServer) {
 		})
 	})
 }
-
 
 class Game {
   constructor (map) {
@@ -112,28 +112,39 @@ class Game {
 	dispatchMouvement (element) {
 		Streamy.broadcast('gameStream', {data: element})
 	}
-	startGhostMoving () {
+	startGhostMoving (id) {
 		Object.keys(this.ghostsById).forEach((id, index) => {
-			const ghost = this.ghostsById[id]
-			const deplacements = ghost.deplacements
-			const possibilities = deplacements.length - 1
-			setInterval(() => {
-				let sens = ghost.orientation
-				var i = 0
-				while (!this[sens](ghost) && i < possibilities) {
-					sens = deplacements[Math.round(Math.random() * possibilities)]
-					i++
-				}
-			}, 1000)
+			this.move(id)
 		})
-		return this
+	}
+	move (id) {
+		const ghost = this.ghostsById[id]
+		const deplacements = ghost.deplacements
+		const possibilities = deplacements.length - 1
+		let sens = ghost.orientation
+		this.promise(sens, ghost, deplacements).then(
+			(id) => {
+				setTimeout(() => this.move(id), 100);
+			}
+		).catch((error) => {
+		  console.log("Failed!", error);
+		})
+	}
+	promise (sens, ghost, deplacements) {
+		return new Promise((resolve) => {
+			var i = 0
+	    while(!this[sens](ghost) && i < 4) {
+				sens = deplacements[Math.round(Math.random() * 3)]
+				i++
+			}
+			resolve(ghost.id)
+		})
 	}
 	down (ghost) {
 		const layer = this.layers.ghost
 		var x = ghost.x
 		var y = ghost.y
 		if((y + 1) < config.mapHeight && this.isFreePosition(x, y + 1, ghost.canHover)){
-			console.log('down')
 			// vers le sud
 			var from = { x: x, y: y }
 			ghost.orientation = "down"
@@ -151,7 +162,6 @@ class Game {
 		var x = ghost.x
 		var y = ghost.y
 		if((y - 1) > 0 && this.isFreePosition(x, y - 1, ghost.canHover)) {
-			console.log('up')
 			// to the rigth
 			var from = { x: x, y: y }
 			ghost.orientation = "up"
@@ -169,7 +179,6 @@ class Game {
 		var x = ghost.x
 		var y = ghost.y
 		if((x + 1) < config.mapWidth && this.isFreePosition(x + 1, y, ghost.canHover)) {
-			console.log('right')
 			// to the rigth
 			var from = { x: x, y: y }
 			ghost.orientation = "right"
@@ -187,7 +196,6 @@ class Game {
 		var x = ghost.x
 		var y = ghost.y
 		if((x - 1) > 0 && this.isFreePosition(x - 1, y, ghost.canHover)) {
-			console.log('left')
 			// to the left
 			var from = { x: x, y: y }
 			ghost.orientation = "left"

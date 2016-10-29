@@ -24,8 +24,8 @@ export default class Layer {
   }
   translation (from, to) {
 		this.matrix[to.y][to.x] = Object.assign({}, this.matrix[from.y][from.x])
-    this.matrix[from.y][from.x].val = {
-      id : guid(),
+    this.matrix[from.y][from.x] = {
+      id : guid(), // IMPORTANT TO CHANGE THIS ID
       val : 0
     }
 	}
