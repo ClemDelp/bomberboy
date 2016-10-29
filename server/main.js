@@ -3,7 +3,7 @@ import bodyParser from 'body-parser'
 const Fiber = require('fibers')
 import Layer from './layer'
 import {config} from './config'
-import {Ghost} from './ghost'
+import {Ghost, Player} from './ghost'
 import {guid} from './utils'
 
 if(Meteor.isServer) {
@@ -20,9 +20,11 @@ if(Meteor.isServer) {
 		game.startGhostMoving()
 		// ROUTE
 		app.get('/getContextGame', function (req, res) {
-			console.log('send context to new user')
+			const player = game.addPlayer()
+			console.log('send context to new player')
 			const context = {
-				layers: game.layers
+				layers: game.layers,
+				player
 			}
 			res.json({data: context})
 		})
@@ -32,7 +34,10 @@ if(Meteor.isServer) {
 
 class Game {
   constructor (map) {
+		// PARAMETERS
 		this.ghostsById = {}
+		this.playersById = {}
+		this.layers = {}
 		// SET MAP LAYER
 		let mapLayer = new Layer()
 		for(var y = 0; y < mapLayer.cols; y++) {
@@ -48,6 +53,15 @@ class Game {
 			'ghost': new Layer()
 		}
   }
+	addPlayer () {
+		const layerName = 'ghost'
+		const newPlayer = new Player()
+		const position = this.getFreePosition(newPlayer)
+		newPlayer.setPosition(position)
+		this.playersById[newPlayer.id] = newPlayer
+		this.addElementOnLayer(layerName, newPlayer, position)
+		return newPlayer
+	}
 	setGhostLayer () {
 		const layerName = 'ghost'
 		for (let i = 0; i < config.initGhostNumber; i++) {
@@ -66,18 +80,20 @@ class Game {
 		}
 	}
 	getFreePosition (element) {
-		let x = 0
-    let y = 0
-		let found = false
-		// while we found free position
-		while (!found) {
-			x = Math.round(Math.random() * config.mapWidth)
-			if(x === config.mapWidth) x--
-			y = Math.round(Math.random() * config.mapHeight)
-			if(y === config.mapHeight) y--
-			found = this.isFreePosition(x, y, element.canHover)
+		if (element) {
+			let x = 0
+			let y = 0
+			let found = false
+			// while we found free position
+			while (!found) {
+				x = Math.round(Math.random() * config.mapWidth)
+				if(x === config.mapWidth) x--
+				y = Math.round(Math.random() * config.mapHeight)
+				if(y === config.mapHeight) y--
+				found = this.isFreePosition(x, y, element.canHover)
+			}
+			return {x, y}
 		}
-		return {x, y}
 	}
 	isFreePosition (x, y, canHover) {
 		let free = false
@@ -85,7 +101,6 @@ class Game {
 		// Check on all layers
 		Object.keys(this.layers).forEach((layerName) => {
 			const layer = this.layers[layerName]
-			console.log('eeeeee ---> ', ' x :', x, ' y : ', y)
 			if (!stop && _.indexOf(canHover, layer.matrix[y][x].val) > - 1) free = true
 			else {
 				free = false

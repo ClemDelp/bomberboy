@@ -23,6 +23,10 @@ Streamy.on('gameStream', function (response) {
 
 var ghostsById = {} // --> all the moving elements
 
+var sprite;
+var group;
+var cursors;
+
 class GameCanvas extends React.Component {
   constructor (props) {
     super(props)
@@ -43,13 +47,21 @@ class GameCanvas extends React.Component {
   preload () {
     const {game} = this.state
     game.stage.backgroundColor = '#007236'
-    game.load.image('mushroom', 'assets/sprites/mushroom2.png')
+    game.load.image('phaser', 'assets/sprites/phaser-dude.png');
+    game.load.image('block', 'assets/sprites/block.png');
     game.load.image('ghost', 'assets/sprites/ghost-icon.png')
   }
 
   create () {
     const {game} = this.state
     const {layers} = this.props
+    //
+    game.world.setBounds(0, 0, 2000, 1200);
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.stage.backgroundColor = '#2d2d2d';
+
+    game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM;
+    group = game.add.physicsGroup(Phaser.Physics.ARCADE);
     //  Modify the world and camera bounds
     game.world.setBounds(-50, -50, 2000, 2000)
     // RENDER EACH LAYER
@@ -59,12 +71,24 @@ class GameCanvas extends React.Component {
         for (var y = 0; y < layer.matrix.length; y++) {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
-            // DIRECTELY USE A TYPE PARAMETER LIKE THIS:
-            // game.add.sprite(x, y, TYPE)
-            if (element.val === 1) game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'mushroom');
-            else if (element.val === 2) {
+            if (element.val === 1) { // BLOCK
+              var block = group.create(x * layer.cubeSize, y * layer.cubeSize, 'block');
+              block.scale.setTo(0.4, 0.4);
+              block.body.immovable = true;
+
+            }
+            else if (element.val === 2) { // GHOST
               const newGhost = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'ghost')
               ghostsById[element.id] = newGhost
+            }
+            else if (element.val === 3) { // PLAYER
+              if (element.id === this.props.player.id) { // It's the main player
+                sprite = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'phaser')
+                game.physics.arcade.enable(sprite);
+                game.camera.follow(sprite);
+              } else { // Other players
+                // ghostsById[element.id] = newGhost
+              }
             }
           }
         }
@@ -74,6 +98,7 @@ class GameCanvas extends React.Component {
   }
 
   update () {
+    const {game} = this.state
     if (buffer.length > 0) {
       const element = buffer.shift()
       if (element.type === 'ghost') {
@@ -82,16 +107,36 @@ class GameCanvas extends React.Component {
         ghostsById[element.id].y = element.y * 32
       }
     }
-    const {game} = this.state
-    if (cursors.up.isDown) game.camera.y -= 4;
-    else if (cursors.down.isDown) game.camera.y += 4;
-    if (cursors.left.isDown) game.camera.x -= 4;
-    else if (cursors.right.isDown) game.camera.x += 4;
+    game.physics.arcade.collide(sprite, group, this.collisionHandler, null, this);
+    sprite.body.velocity.x = 0;
+    sprite.body.velocity.y = 0;
+
+    if (cursors.left.isDown)
+    {
+        sprite.body.velocity.x = -200;
+    }
+    else if (cursors.right.isDown)
+    {
+        sprite.body.velocity.x = 200;
+    }
+
+    if (cursors.up.isDown)
+    {
+        sprite.body.velocity.y = -200;
+    }
+    else if (cursors.down.isDown)
+    {
+        sprite.body.velocity.y = 200;
+    }
+  }
+
+  collisionHandler (player, block) {
+    // here put the collision logic
   }
 
   renderCanvas () {
     const {game} = this.state
-    game.debug.cameraInfo(game.camera, 32, 32);
+    // game.debug.cameraInfo(game.camera, 32, 32);
   }
 
   // first time
@@ -134,9 +179,9 @@ class GameCanvas extends React.Component {
 // EXPORT
 //
 function mapStateToProps ({
-  game: {layers}
+  game: {layers, player}
 }) {
-  return {layers}
+  return {layers, player}
 }
 
 export default connect(

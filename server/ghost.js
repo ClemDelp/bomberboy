@@ -21,6 +21,15 @@ export class Ghost extends Element {
     this.val = 2 // important for map
     this.canHover = [0]
     this.orientation = 'down'
-    this.color = '#27ae60'
+  }
+}
+
+export class Player extends Element {
+  constructor () {
+    super()
+    this.type = 'player'
+    this.val = 3 // important for map
+    this.canHover = [0]
+    this.orientation = 'down'
   }
 }
