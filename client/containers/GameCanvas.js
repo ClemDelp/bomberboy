@@ -22,9 +22,10 @@ Streamy.on('gameStream', function (response) {
 //
 
 var ghostsById = {} // --> all the moving elements
-
-var sprite;
-var group;
+let playersById = {}
+let playersGroup // players group
+var mainPlayer // main player
+var group // ghosts group
 var cursors;
 
 class GameCanvas extends React.Component {
@@ -54,16 +55,17 @@ class GameCanvas extends React.Component {
 
   create () {
     const {game} = this.state
-    const {layers} = this.props
-    //
-    game.world.setBounds(0, 0, 2000, 1200);
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-    game.stage.backgroundColor = '#2d2d2d';
-
-    game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM;
-    group = game.add.physicsGroup(Phaser.Physics.ARCADE);
+    const {layers, player} = this.props
     //  Modify the world and camera bounds
     game.world.setBounds(-50, -50, 2000, 2000)
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.stage.backgroundColor = '#2d2d2d';
+    game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM;
+    // CREATE GROUPS
+    ghostsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
+    playersGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
+
+
     // RENDER EACH LAYER
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
@@ -72,23 +74,22 @@ class GameCanvas extends React.Component {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
             if (element.val === 1) { // BLOCK
-              var block = group.create(x * layer.cubeSize, y * layer.cubeSize, 'block');
+              var block = ghostsGroup.create(x * layer.cubeSize, y * layer.cubeSize, 'block');
               block.scale.setTo(0.4, 0.4);
               block.body.immovable = true;
-
             }
             else if (element.val === 2) { // GHOST
               const newGhost = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'ghost')
               ghostsById[element.id] = newGhost
             }
             else if (element.val === 3) { // PLAYER
-              if (element.id === this.props.player.id) { // It's the main player
-                sprite = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'phaser')
-                game.physics.arcade.enable(sprite);
-                // game.camera.follow(sprite);
-                game.camera.follow(sprite, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+              if (element.id === player.id) { // It's the main player
+                mainPlayer = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'phaser')
+                game.physics.arcade.enable(mainPlayer);
+                game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
               } else { // Other players
-                // ghostsById[element.id] = newGhost
+                var newPlayer = playersGroup.create(x * layer.cubeSize, y * layer.cubeSize, 'phaser');
+                playersById[element.id] = newPlayer
               }
             }
           }
@@ -100,6 +101,9 @@ class GameCanvas extends React.Component {
 
   update () {
     const {game} = this.state
+    // SET COLLISIONS
+    game.physics.arcade.collide(mainPlayer, ghostsGroup, this.collisionHandler, null, this);
+    // BUFFER MANAGER
     if (buffer.length > 0) {
       const element = buffer.shift()
       if (element.type === 'ghost') {
@@ -108,26 +112,25 @@ class GameCanvas extends React.Component {
         ghostsById[element.id].y = element.y * 32
       }
     }
-    game.physics.arcade.collide(sprite, group, this.collisionHandler, null, this);
-    sprite.body.velocity.x = 0;
-    sprite.body.velocity.y = 0;
-
+    // MAIN USER DEPLACEMENTS
+    mainPlayer.body.velocity.x = 0;
+    mainPlayer.body.velocity.y = 0;
     if (cursors.left.isDown)
     {
-        sprite.body.velocity.x = -200;
+        mainPlayer.body.velocity.x = -200;
     }
     else if (cursors.right.isDown)
     {
-        sprite.body.velocity.x = 200;
+        mainPlayer.body.velocity.x = 200;
     }
 
     if (cursors.up.isDown)
     {
-        sprite.body.velocity.y = -200;
+        mainPlayer.body.velocity.y = -200;
     }
     else if (cursors.down.isDown)
     {
-        sprite.body.velocity.y = 200;
+        mainPlayer.body.velocity.y = 200;
     }
   }
 
