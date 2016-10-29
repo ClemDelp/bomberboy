@@ -85,7 +85,8 @@ class GameCanvas extends React.Component {
               if (element.id === this.props.player.id) { // It's the main player
                 sprite = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'phaser')
                 game.physics.arcade.enable(sprite);
-                game.camera.follow(sprite);
+                // game.camera.follow(sprite);
+                game.camera.follow(sprite, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
               } else { // Other players
                 // ghostsById[element.id] = newGhost
               }
