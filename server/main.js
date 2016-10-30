@@ -133,79 +133,46 @@ class Game {
 	promise (sens, ghost, deplacements) {
 		return new Promise((resolve) => {
 			var i = 0
-	    while(!this[sens](ghost) && i < 4) {
+	    while(!this.deplacement(sens, ghost) && i < 4) {
 				sens = deplacements[Math.round(Math.random() * 3)]
 				i++
 			}
 			resolve(ghost.id)
 		})
 	}
-	down (ghost) {
+	deplacement (direction, ghost) {
 		const layer = this.layers.ghost
 		var x = ghost.x
 		var y = ghost.y
-		if((y + 1) < config.mapHeight && this.isFreePosition(x, y + 1, ghost.canHover)){
-			// vers le sud
-			var from = { x: x, y: y }
-			ghost.orientation = "down"
-			ghost.y++
-			var to = { x: ghost.x, y: ghost.y }
-			layer.translation(from, to)
-			this.dispatchMouvement(ghost)
-			return true
-		}else{
-			return false
+		var from = { x: x, y: y }
+		switch (direction) {
+			case 'down':
+				if((y + 1) < config.mapHeight && this.isFreePosition(x, y + 1, ghost.canHover)) ghost.y++
+				else return false
+				break;
+
+			case 'up':
+				if((y - 1) > 0 && this.isFreePosition(x, y - 1, ghost.canHover)) ghost.y--
+				else return false
+				break;
+
+			case 'right':
+				if((x + 1) < config.mapWidth && this.isFreePosition(x + 1, y, ghost.canHover)) ghost.x++
+				else return false
+				break;
+
+			case 'left':
+				if((x - 1) > 0 && this.isFreePosition(x - 1, y, ghost.canHover)) ghost.x--
+				else return false
+				break;
+
+			default:
+				return false
 		}
-	}
-	up (ghost) {
-		const layer = this.layers.ghost
-		var x = ghost.x
-		var y = ghost.y
-		if((y - 1) > 0 && this.isFreePosition(x, y - 1, ghost.canHover)) {
-			// to the rigth
-			var from = { x: x, y: y }
-			ghost.orientation = "up"
-			ghost.y--
-			var to = { x: ghost.x, y: ghost.y }
-			layer.translation(from, to)
-			this.dispatchMouvement(ghost)
-			return true
-		}else{
-			return false
-		}
-	}
-	right (ghost) {
-		const layer = this.layers.ghost
-		var x = ghost.x
-		var y = ghost.y
-		if((x + 1) < config.mapWidth && this.isFreePosition(x + 1, y, ghost.canHover)) {
-			// to the rigth
-			var from = { x: x, y: y }
-			ghost.orientation = "right"
-			ghost.x++
-			var to = { x: ghost.x, y: ghost.y }
-			layer.translation(from, to)
-			this.dispatchMouvement(ghost)
-			return true
-		}else{
-			return false
-		}
-	}
-	left (ghost) {
-		const layer = this.layers.ghost
-		var x = ghost.x
-		var y = ghost.y
-		if((x - 1) > 0 && this.isFreePosition(x - 1, y, ghost.canHover)) {
-			// to the left
-			var from = { x: x, y: y }
-			ghost.orientation = "left"
-			ghost.x--
-			var to = { x: ghost.x, y: ghost.y }
-			layer.translation(from, to)
-			this.dispatchMouvement(ghost)
-			return true
-		}else{
-			return false
-		}
+		ghost.orientation = direction
+		var to = { x: ghost.x, y: ghost.y }
+		layer.translation(from, to)
+		this.dispatchMouvement(ghost)
+		return true
 	}
 }
