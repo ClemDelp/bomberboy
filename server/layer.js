@@ -1,11 +1,12 @@
 import {guid} from './utils'
-import {config} from './config'
+import {config} from '../config'
 
 export default class Layer {
   constructor() {
-    this.rows = config.mapHeight
-	  this.cols = config.mapWidth
-    this.cubeSize = config.cubeSize
+    const {map, box} = config
+    this.rows = map.rows
+	  this.cols = map.cols
+    this.elementRef = config.block
     // create the matrix
     this.matrix = []
     // default matrix value
@@ -19,14 +20,7 @@ export default class Layer {
         }
     }
   }
-  setVal (x, y, val) {
-    this.matrix[y][x].val = val
+  setVal (col, row, val) {
+    this.matrix[row][col].val = val
   }
-  translation (from, to) {
-		this.matrix[to.y][to.x] = Object.assign({}, this.matrix[from.y][from.x])
-    this.matrix[from.y][from.x] = {
-      id : guid(), // IMPORTANT TO CHANGE THIS ID
-      val : 0
-    }
-	}
 }

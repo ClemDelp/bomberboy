@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import bodyParser from 'body-parser'
 const Fiber = require('fibers')
 import Layer from './layer'
-import {config} from './config'
+import {config} from '../config'
 import {Ghost, Player} from './ghost'
 import {guid} from './utils'
 const Promise = require('promise')
@@ -18,7 +18,7 @@ if(Meteor.isServer) {
 		// GAME
 		const game = new Game()
 		game.setGhostLayer()
-		game.startGhostMoving()
+		// game.startGhostMoving()
 		// ROUTE
 		app.get('/getContextGame', function (req, res) {
 			const player = game.addPlayer()
@@ -55,19 +55,23 @@ class Game {
   }
 	addPlayer () {
 		const layerName = 'ghost'
+		const layer = this.layers[layerName]
+		const refSize = layer.elementRef.size[0]
 		const newPlayer = new Player()
 		const position = this.getFreePosition(newPlayer)
-		newPlayer.setPosition(position)
+		newPlayer.setPosition(position, refSize)
 		this.playersById[newPlayer.id] = newPlayer
 		this.addElementOnLayer(layerName, newPlayer, position)
 		return newPlayer
 	}
 	setGhostLayer () {
 		const layerName = 'ghost'
-		for (let i = 0; i < config.initGhostNumber; i++) {
+		const layer = this.layers[layerName]
+		const refSize = layer.elementRef.size[0]
+		for (let i = 0; i < config.ghost.initNumber; i++) {
 			const newGhost = new Ghost()
 			const position = this.getFreePosition(newGhost)
-			newGhost.setPosition(position)
+			newGhost.setPosition(position, refSize)
 			this.ghostsById[newGhost.id] = newGhost
 			this.addElementOnLayer(layerName, newGhost, position)
 		}
@@ -86,16 +90,17 @@ class Game {
 			let found = false
 			// while we found free position
 			while (!found) {
-				x = Math.round(Math.random() * config.mapWidth)
-				if(x === config.mapWidth) x--
-				y = Math.round(Math.random() * config.mapHeight)
-				if(y === config.mapHeight) y--
+				x = Math.round(Math.random() * config.map.cols)
+				if(x === config.map.cols) x--
+				y = Math.round(Math.random() * config.map.rows)
+				if(y === config.map.rows) y--
 				found = this.isFreePosition(x, y, element.canHover)
 			}
 			return {x, y}
 		}
 	}
 	isFreePosition (x, y, canHover) {
+		console.log(x, y, canHover)
 		let free = false
 		let stop = false
 		// Check on all layers
@@ -123,56 +128,92 @@ class Game {
 		const possibilities = deplacements.length - 1
 		let sens = ghost.orientation
 		this.promise(sens, ghost, deplacements).then(
+			(ghost, direction) => {
+				// SUCCESS
+				const layer = this.layers.ghost
+				ghost.orientation = direction
+				var from = { x: x, y: y }
+											// translation (from, to) {
+											// 	this.matrix[to.y][to.x] = Object.assign({}, this.matrix[from.y][from.x])
+											// 	this.matrix[from.y][from.x] = {
+											// 		id : guid(), // IMPORTANT TO CHANGE THIS ID
+											// 		val : 0
+											// 	}
+											// }
+				var to = { x: ghost.x, y: ghost.y }
+				layer.translation(from, to)
+				let mvt = 32
+				var refreshId = setInterval(() => {
+				  if (mvt > 0) {
+						switch (direction) {
+							case 'down':
+								y++
+								break
+
+							case 'up':
+								y--
+								break
+
+							case 'right':
+								x++
+								break
+
+							case 'left':
+								x--
+								break
+
+							default:
+								return false
+						}
+					} else {
+						this.move(id)
+						clearInterval(refreshId);
+					}
+					this.dispatchMouvement(ghost)
+					mvt--
+				}, 100);
+			},
 			(id) => {
-				setTimeout(() => this.move(id), 100);
+				// FAIL
+				console.log('explosion !!!!')
 			}
 		).catch((error) => {
-		  console.log("Failed!", error);
+		  console.log("error!", error);
 		})
 	}
 	promise (sens, ghost, deplacements) {
-		return new Promise((resolve) => {
-			var i = 0
-	    while(!this.deplacement(sens, ghost) && i < 4) {
+		return new Promise((resolve, reject) => {
+			var test = 0
+	    while(!this.deplacement(sens, ghost)) {
 				sens = deplacements[Math.round(Math.random() * 3)]
-				i++
+				test++
+				if(test > 20) reject(ghost.id) // lanch explosion
 			}
-			resolve(ghost.id)
+			resolve(ghost, direction)
 		})
 	}
 	deplacement (direction, ghost) {
-		const layer = this.layers.ghost
 		var x = ghost.x
 		var y = ghost.y
-		var from = { x: x, y: y }
 		switch (direction) {
 			case 'down':
-				if((y + 1) < config.mapHeight && this.isFreePosition(x, y + 1, ghost.canHover)) ghost.y++
-				else return false
-				break;
+				if((y + 1) < config.map.rows && this.isFreePosition(x, y + 1, ghost.canHover)) return true
+				return false
 
 			case 'up':
-				if((y - 1) > 0 && this.isFreePosition(x, y - 1, ghost.canHover)) ghost.y--
-				else return false
-				break;
+				if((y - 1) > 0 && this.isFreePosition(x, y - 1, ghost.canHover)) return true
+				return false
 
 			case 'right':
-				if((x + 1) < config.mapWidth && this.isFreePosition(x + 1, y, ghost.canHover)) ghost.x++
-				else return false
-				break;
+				if((x + 1) < config.map.cols && this.isFreePosition(x + 1, y, ghost.canHover)) return true
+				return false
 
 			case 'left':
-				if((x - 1) > 0 && this.isFreePosition(x - 1, y, ghost.canHover)) ghost.x--
-				else return false
-				break;
+				if((x - 1) > 0 && this.isFreePosition(x - 1, y, ghost.canHover)) return true
+				return false
 
 			default:
 				return false
 		}
-		ghost.orientation = direction
-		var to = { x: ghost.x, y: ghost.y }
-		layer.translation(from, to)
-		this.dispatchMouvement(ghost)
-		return true
 	}
 }

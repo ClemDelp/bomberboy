@@ -3,6 +3,7 @@
 //
 import React from 'react'
 import {connect} from 'react-redux'
+import {config} from '../../config'
 
 //
 // ENV
@@ -42,15 +43,15 @@ class GameCanvas extends React.Component {
   }
 
   getGhostBuffer () {
-      return this.state.getGhostBuffer
+    return this.state.getGhostBuffer
   }
 
   preload () {
     const {game} = this.state
     game.stage.backgroundColor = '#007236'
-    game.load.image('phaser', 'assets/sprites/phaser-dude.png');
-    game.load.image('block', 'assets/sprites/block.png');
-    game.load.image('ghost', 'assets/sprites/ghost-icon.png')
+    game.load.image(config.player.name, config.player.img);
+    game.load.image(config.block.name, config.block.img);
+    game.load.image(config.ghost.name, config.ghost.img)
   }
 
   create () {
@@ -73,23 +74,27 @@ class GameCanvas extends React.Component {
         for (var y = 0; y < layer.matrix.length; y++) {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
+            const refSize = layer.elementRef.size[0] * layer.elementRef.scale[0]
             if (element.val === 1) { // BLOCK
-              var block = ghostsGroup.create(x * layer.cubeSize, y * layer.cubeSize, 'block');
-              block.scale.setTo(0.4, 0.4);
+              var block = ghostsGroup.create(x * refSize, y * refSize, config.block.name);
+              block.scale.setTo(config.block.scale[0], config.block.scale[1]);
               block.body.immovable = true;
             }
             else if (element.val === 2) { // GHOST
-              const newGhost = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'ghost')
-              newGhost.anchor.setTo(-0.9, -0.9);
+              const newGhost = game.add.sprite(x * refSize, y * refSize, config.ghost.name)
+              // newGhost.anchor.setTo(-0.9, -0.9);
+              newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
               ghostsById[element.id] = newGhost
             }
             else if (element.val === 3) { // PLAYER
               if (element.id === player.id) { // If it's the main player
-                mainPlayer = game.add.sprite(x * layer.cubeSize, y * layer.cubeSize, 'phaser')
+                mainPlayer = game.add.sprite(x * refSize, y * refSize, config.player.name)
+                mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
                 game.physics.arcade.enable(mainPlayer);
                 game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
               } else { // Other players
-                var newPlayer = playersGroup.create(x * layer.cubeSize, y * layer.cubeSize, 'phaser');
+                var newPlayer = playersGroup.create(x * refSize, y * refSize, config.player.name);
+                newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
                 playersById[element.id] = newPlayer
               }
             }
@@ -107,7 +112,7 @@ class GameCanvas extends React.Component {
     // BUFFER MANAGER
     if (buffer.length > 0) {
       const element = buffer.shift()
-      if (element.type === 'ghost') {
+      if (element.type === config.ghost.name) {
         // console.log('element --> ', element)
         const coef = 95 * 0.4
         ghostsById[element.id].x = element.x * coef

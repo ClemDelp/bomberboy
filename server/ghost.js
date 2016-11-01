@@ -1,5 +1,5 @@
 import {guid} from './utils'
-import {config} from './config'
+import {config} from '../config'
 
 class Element {
   constructor () {
@@ -8,28 +8,30 @@ class Element {
     this.id = guid()
     this.deplacements = ['down','right','up','left']
   }
-  setPosition (position) {
-    this.x = position.x
-    this.y = position.y
+  setPosition (position, refSize) {
+    this.x = position.x * refSize
+    this.y = position.y * refSize
   }
 }
 
 export class Ghost extends Element {
   constructor () {
     super()
-    this.type = 'ghost'
-    this.val = 2 // important for map
-    this.canHover = [0]
-    this.orientation = 'down'
+    const {ghost} = config
+    this.type = ghost.name
+    this.val = ghost.val
+    this.canHover = ghost.canHover
+    this.orientation = ghost.orientation
   }
 }
 
 export class Player extends Element {
   constructor () {
     super()
-    this.type = 'player'
-    this.val = 3 // important for map
-    this.canHover = [0]
-    this.orientation = 'down'
+    const {player} = config
+    this.type = player.name
+    this.val = player.val
+    this.canHover = player.canHover
+    this.orientation = player.orientation
   }
 }
