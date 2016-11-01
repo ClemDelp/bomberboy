@@ -4,7 +4,7 @@ const Fiber = require('fibers')
 import Layer from './layer'
 import {config} from '../config'
 import {Ghost, Player} from './ghost'
-import {guid} from './utils'
+import {guid, setPositionWithDirection} from './utils'
 const Promise = require('promise')
 
 if(Meteor.isServer) {
@@ -17,7 +17,7 @@ if(Meteor.isServer) {
 		}))
 		// GAME
 		const game = new Game()
-		game.setGhostLayer()
+		game.addGhosts()
 		// game.startGhostMoving()
 		// ROUTE
 		app.get('/getContextGame', function (req, res) {
@@ -25,7 +25,9 @@ if(Meteor.isServer) {
 			console.log('send context to new player')
 			const context = {
 				layers: game.layers,
-				player
+				ghosts: game.ghostsById,
+				players: game.playersById,
+				playerId: player.id
 			}
 			res.json({data: context})
 		})
@@ -49,38 +51,31 @@ class Game {
     }
 		// DEFINE LAYERS
 		this.layers = {
-			'map': mapLayer,
-			'ghost': new Layer()
+			'map': mapLayer
 		}
   }
 	addPlayer () {
-		const layerName = 'ghost'
-		const layer = this.layers[layerName]
-		const refSize = layer.elementRef.size[0]
+		const refSize = this.layers.map.elementRef.size[0] * this.layers.map.elementRef.scale[0]
 		const newPlayer = new Player()
 		const position = this.getFreePosition(newPlayer)
-		newPlayer.setPosition(position, refSize)
+		console.log('position --> ', position)
+		newPlayer.setPosition({
+			x: position.x * refSize,
+			y: position.y * refSize
+		})
 		this.playersById[newPlayer.id] = newPlayer
-		this.addElementOnLayer(layerName, newPlayer, position)
 		return newPlayer
 	}
-	setGhostLayer () {
-		const layerName = 'ghost'
-		const layer = this.layers[layerName]
-		const refSize = layer.elementRef.size[0]
+	addGhosts () {
+		const refSize = this.layers.map.elementRef.size[0] * this.layers.map.elementRef.scale[0]
 		for (let i = 0; i < config.ghost.initNumber; i++) {
 			const newGhost = new Ghost()
 			const position = this.getFreePosition(newGhost)
-			newGhost.setPosition(position, refSize)
+			newGhost.setPosition({
+				x: position.x * refSize,
+				y: position.y * refSize
+			})
 			this.ghostsById[newGhost.id] = newGhost
-			this.addElementOnLayer(layerName, newGhost, position)
-		}
-	}
-	addElementOnLayer (layerName, el, position) {
-		const layer = this.layers[layerName]
-		if (layer && layer.matrix) {
-			// We merge to replace ID and other value with new val
-			layer.matrix[position.y][position.x] = Object.assign({}, layer.matrix[position.y][position.x], el)
 		}
 	}
 	getFreePosition (element) {
@@ -100,7 +95,6 @@ class Game {
 		}
 	}
 	isFreePosition (x, y, canHover) {
-		console.log(x, y, canHover)
 		let free = false
 		let stop = false
 		// Check on all layers
@@ -127,44 +121,30 @@ class Game {
 		const deplacements = ghost.deplacements
 		const possibilities = deplacements.length - 1
 		let sens = ghost.orientation
-		this.promise(sens, ghost, deplacements).then(
+		this.promise(sens, ghost, deplacements)
+		.then(
 			(ghost, direction) => {
 				// SUCCESS
+				var x = ghost.x
+				var y = ghost.y
 				const layer = this.layers.ghost
 				ghost.orientation = direction
-				var from = { x: x, y: y }
-											// translation (from, to) {
-											// 	this.matrix[to.y][to.x] = Object.assign({}, this.matrix[from.y][from.x])
-											// 	this.matrix[from.y][from.x] = {
-											// 		id : guid(), // IMPORTANT TO CHANGE THIS ID
-											// 		val : 0
-											// 	}
-											// }
-				var to = { x: ghost.x, y: ghost.y }
-				layer.translation(from, to)
-				let mvt = 32
+				layer.replaceObject(x, y, {
+					id : guid(), // IMPORTANT TO CHANGE THIS ID
+					val : 0
+				})
+				let mvt = layer.elementRef.size[0]
+
+				function yourFunction(){
+				    // do whatever you like here
+
+				    setTimeout(yourFunction, 100);
+				}
+
+				yourFunction();
 				var refreshId = setInterval(() => {
 				  if (mvt > 0) {
-						switch (direction) {
-							case 'down':
-								y++
-								break
-
-							case 'up':
-								y--
-								break
-
-							case 'right':
-								x++
-								break
-
-							case 'left':
-								x--
-								break
-
-							default:
-								return false
-						}
+						setPositionWithDirection(x, y, direction)
 					} else {
 						this.move(id)
 						clearInterval(refreshId);
@@ -184,7 +164,7 @@ class Game {
 	promise (sens, ghost, deplacements) {
 		return new Promise((resolve, reject) => {
 			var test = 0
-	    while(!this.deplacement(sens, ghost)) {
+	    while(!this.canMove(sens, ghost)) {
 				sens = deplacements[Math.round(Math.random() * 3)]
 				test++
 				if(test > 20) reject(ghost.id) // lanch explosion
@@ -192,28 +172,18 @@ class Game {
 			resolve(ghost, direction)
 		})
 	}
-	deplacement (direction, ghost) {
-		var x = ghost.x
-		var y = ghost.y
-		switch (direction) {
-			case 'down':
-				if((y + 1) < config.map.rows && this.isFreePosition(x, y + 1, ghost.canHover)) return true
-				return false
-
-			case 'up':
-				if((y - 1) > 0 && this.isFreePosition(x, y - 1, ghost.canHover)) return true
-				return false
-
-			case 'right':
-				if((x + 1) < config.map.cols && this.isFreePosition(x + 1, y, ghost.canHover)) return true
-				return false
-
-			case 'left':
-				if((x - 1) > 0 && this.isFreePosition(x - 1, y, ghost.canHover)) return true
-				return false
-
-			default:
-				return false
+	canMove (direction, ghost) {
+		const {x, y} = setPositionWithDirection(ghost.x, ghost.y, direction)
+		if (
+			y < config.map.rows && // down
+			y > 0 && // up
+			x < config.map.cols && // right
+			x > 0 && // left
+			this.isFreePosition(x, y, ghost.canHover)
+		) {
+			return true
+		} else {
+			return false
 		}
 	}
 }

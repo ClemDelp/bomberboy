@@ -22,8 +22,7 @@ Streamy.on('gameStream', function (response) {
 // COMPONENT
 //
 
-var ghostsById = {} // --> all the moving elements
-let playersById = {}
+var dynamicElementsById = {} // --> all the moving elements
 let playersGroup // players group
 var mainPlayer // main player
 var group // ghosts group
@@ -36,15 +35,15 @@ class GameCanvas extends React.Component {
     this.preload = this.preload.bind(this)
     this.update = this.update.bind(this)
     this.renderCanvas = this.renderCanvas.bind(this)
-    this.getGhostBuffer = this.getGhostBuffer.bind(this)
-    this.state = {
-      ghostBuffer: props.ghostBuffer
-    }
+    // this.getGhostBuffer = this.getGhostBuffer.bind(this)
+    // this.state = {
+    //   ghostBuffer: props.ghostBuffer
+    // }
   }
 
-  getGhostBuffer () {
-    return this.state.getGhostBuffer
-  }
+  // getGhostBuffer () {
+  //   return this.state.getGhostBuffer
+  // }
 
   preload () {
     const {game} = this.state
@@ -56,7 +55,12 @@ class GameCanvas extends React.Component {
 
   create () {
     const {game} = this.state
-    const {layers, player} = this.props
+    const {
+      layers,
+      ghosts,
+      players,
+      playerId
+    } = this.props
     //  Modify the world and camera bounds
     game.world.setBounds(-50, -50, 2000, 2000)
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -67,7 +71,7 @@ class GameCanvas extends React.Component {
     playersGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
 
 
-    // RENDER EACH LAYER
+    // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
         const layer = layers[layerName]
@@ -80,28 +84,41 @@ class GameCanvas extends React.Component {
               block.scale.setTo(config.block.scale[0], config.block.scale[1]);
               block.body.immovable = true;
             }
-            else if (element.val === 2) { // GHOST
-              const newGhost = game.add.sprite(x * refSize, y * refSize, config.ghost.name)
-              // newGhost.anchor.setTo(-0.9, -0.9);
-              newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
-              ghostsById[element.id] = newGhost
-            }
-            else if (element.val === 3) { // PLAYER
-              if (element.id === player.id) { // If it's the main player
-                mainPlayer = game.add.sprite(x * refSize, y * refSize, config.player.name)
-                mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
-                game.physics.arcade.enable(mainPlayer);
-                game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-              } else { // Other players
-                var newPlayer = playersGroup.create(x * refSize, y * refSize, config.player.name);
-                newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
-                playersById[element.id] = newPlayer
-              }
-            }
           }
         }
       })
     }
+
+    if (ghosts) {
+      Object.keys(ghosts).forEach((key) => {
+        const ghost = ghosts[key]
+        if (ghost.val === 2) { // GHOST
+          const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
+          // newGhost.anchor.setTo(-0.9, -0.9);
+          newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
+          dynamicElementsById[ghost.id] = newGhost
+        }
+      })
+    }
+
+    if (players) {
+      Object.keys(players).forEach((key) => {
+        const player = players[key]
+        if (player.val === 3) { // PLAYER
+          if (player.id === playerId) { // If it's the main player
+            mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
+            mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+            game.physics.arcade.enable(mainPlayer);
+            game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+          } else { // Other players
+            var newPlayer = playersGroup.create(player.x, player.y, config.player.name);
+            newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+            dynamicElementsById[player.id] = newPlayer
+          }
+        }
+      })
+    }
+
     cursors = game.input.keyboard.createCursorKeys()
   }
 
@@ -115,8 +132,8 @@ class GameCanvas extends React.Component {
       if (element.type === config.ghost.name) {
         // console.log('element --> ', element)
         const coef = 95 * 0.4
-        ghostsById[element.id].x = element.x * coef
-        ghostsById[element.id].y = element.y * coef
+        dynamicElementsById[element.id].x = element.x * coef
+        dynamicElementsById[element.id].y = element.y * coef
       }
     }
     // MAIN USER DEPLACEMENTS
@@ -174,10 +191,10 @@ class GameCanvas extends React.Component {
 
   }
 
-  componentWillReceiveProps (nextProps) {
-      // console.log('nextProps', nextProps)
-      this.setState({ghostBuffer: nextProps.ghostBuffer})
-  }
+  // componentWillReceiveProps (nextProps) {
+  //     // console.log('nextProps', nextProps)
+  //     this.setState({ghostBuffer: nextProps.ghostBuffer})
+  // }
 
   render () {
     return (
@@ -190,9 +207,19 @@ class GameCanvas extends React.Component {
 // EXPORT
 //
 function mapStateToProps ({
-  game: {layers, player}
+  game: {
+    layers,
+    ghosts,
+    players,
+    playerId
+  }
 }) {
-  return {layers, player}
+  return {
+    layers,
+    ghosts,
+    players,
+    playerId
+  }
 }
 
 export default connect(

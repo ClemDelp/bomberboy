@@ -8,9 +8,9 @@ class Element {
     this.id = guid()
     this.deplacements = ['down','right','up','left']
   }
-  setPosition (position, refSize) {
-    this.x = position.x * refSize
-    this.y = position.y * refSize
+  setPosition (position) {
+    this.x = position.x
+    this.y = position.y
   }
 }
 
