@@ -22,6 +22,7 @@ export class Ghost extends Element {
     this.val = ghost.val
     this.canHover = ghost.canHover
     this.orientation = ghost.orientation
+    this.velocity = ghost.velocity
   }
 }
 
@@ -33,5 +34,6 @@ export class Player extends Element {
     this.val = player.val
     this.canHover = player.canHover
     this.orientation = player.orientation
+    this.velocity = player.velocity
   }
 }

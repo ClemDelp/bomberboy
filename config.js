@@ -29,6 +29,7 @@ export const config = {
     initNumber: 10,
     val: 2,
     canHover: [0],
-    orientation: 'down'
+    orientation: 'down',
+    velocity: 2 // px per move
   }
 }

@@ -130,10 +130,9 @@ class GameCanvas extends React.Component {
     if (buffer.length > 0) {
       const element = buffer.shift()
       if (element.type === config.ghost.name) {
-        // console.log('element --> ', element)
-        const coef = 95 * 0.4
-        dynamicElementsById[element.id].x = element.x * coef
-        dynamicElementsById[element.id].y = element.y * coef
+        console.log('element --> ', element)
+        dynamicElementsById[element.id].x = element.x
+        dynamicElementsById[element.id].y = element.y
       }
     }
     // MAIN USER DEPLACEMENTS

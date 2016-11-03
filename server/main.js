@@ -18,7 +18,7 @@ if(Meteor.isServer) {
 		// GAME
 		const game = new Game()
 		game.addGhosts()
-		// game.startGhostMoving()
+		game.startGhostMoving()
 		// ROUTE
 		app.get('/getContextGame', function (req, res) {
 			const player = game.addPlayer()
@@ -54,8 +54,11 @@ class Game {
 			'map': mapLayer
 		}
   }
+	getRefSize () {
+		return this.layers.map.elementRef.size[0] * this.layers.map.elementRef.scale[0]
+	}
 	addPlayer () {
-		const refSize = this.layers.map.elementRef.size[0] * this.layers.map.elementRef.scale[0]
+		const refSize = this.getRefSize()
 		const newPlayer = new Player()
 		const position = this.getFreePosition(newPlayer)
 		console.log('position --> ', position)
@@ -67,7 +70,7 @@ class Game {
 		return newPlayer
 	}
 	addGhosts () {
-		const refSize = this.layers.map.elementRef.size[0] * this.layers.map.elementRef.scale[0]
+		const refSize = this.getRefSize()
 		for (let i = 0; i < config.ghost.initNumber; i++) {
 			const newGhost = new Ghost()
 			const position = this.getFreePosition(newGhost)
@@ -108,82 +111,57 @@ class Game {
 		})
 		return free
 	}
-	dispatchMouvement (element) {
-		Streamy.broadcast('gameStream', {data: element})
-	}
-	startGhostMoving (id) {
+	startGhostMoving () {
 		Object.keys(this.ghostsById).forEach((id, index) => {
+			console.log(id, ' start moving...')
 			this.move(id)
 		})
 	}
 	move (id) {
 		const ghost = this.ghostsById[id]
 		const deplacements = ghost.deplacements
-		const possibilities = deplacements.length - 1
-		let sens = ghost.orientation
-		this.promise(sens, ghost, deplacements)
+		this.promise(ghost, deplacements)
 		.then(
-			(ghost, direction) => {
-				// SUCCESS
-				var x = ghost.x
-				var y = ghost.y
-				const layer = this.layers.ghost
-				ghost.orientation = direction
-				layer.replaceObject(x, y, {
-					id : guid(), // IMPORTANT TO CHANGE THIS ID
-					val : 0
-				})
-				let mvt = layer.elementRef.size[0]
-
-				function yourFunction(){
-				    // do whatever you like here
-
-				    setTimeout(yourFunction, 100);
-				}
-
-				yourFunction();
-				var refreshId = setInterval(() => {
-				  if (mvt > 0) {
-						setPositionWithDirection(x, y, direction)
-					} else {
-						this.move(id)
-						clearInterval(refreshId);
-					}
-					this.dispatchMouvement(ghost)
-					mvt--
-				}, 100);
+			(ghost) => {
+				// RESOLVE
+				console.log('broadcast ', ghost.x, ' ', ghost.y)
+				Streamy.broadcast('gameStream', {data: ghost})
+				setTimeout(() => {
+					this.move(ghost.id)
+				}, 100)
 			},
-			(id) => {
-				// FAIL
+			(ghost) => {
+				// REJECT
 				console.log('explosion !!!!')
 			}
 		).catch((error) => {
-		  console.log("error!", error);
+		  console.log("error!", error)
 		})
 	}
-	promise (sens, ghost, deplacements) {
+	promise (ghost, deplacements) {
 		return new Promise((resolve, reject) => {
 			var test = 0
-	    while(!this.canMove(sens, ghost)) {
-				sens = deplacements[Math.round(Math.random() * 3)]
+	    while(!this.canMove(ghost)) {
+				console.log(test)
+				ghost.orientation = deplacements[Math.round(Math.random() * 3)]
 				test++
-				if(test > 20) reject(ghost.id) // lanch explosion
+				if(test > 20) reject(ghost) // lanch explosion
 			}
-			resolve(ghost, direction)
+			resolve(ghost)
 		})
 	}
-	canMove (direction, ghost) {
-		const {x, y} = setPositionWithDirection(ghost.x, ghost.y, direction)
-		if (
-			y < config.map.rows && // down
-			y > 0 && // up
-			x < config.map.cols && // right
-			x > 0 && // left
-			this.isFreePosition(x, y, ghost.canHover)
-		) {
+	canMove (ghost) {
+		const refSize = this.getRefSize()
+		const steps = ghost.velocity
+		const orientation = ghost.orientation
+		const {x, y} = setPositionWithDirection(ghost.x, ghost.y, orientation, steps)
+		const colIndex = Math.floor(x / refSize)
+		const rowIndex = Math.floor(y / refSize)
+		if (this.isFreePosition(colIndex, rowIndex, ghost.canHover)) {
+			ghost.x = x
+			ghost.y = y
 			return true
-		} else {
-			return false
 		}
+		return false
 	}
 }

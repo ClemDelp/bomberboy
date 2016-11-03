@@ -9,22 +9,22 @@ export function guid () {
     s4() + '-' + s4() + s4() + s4();
 }
 
-export function setPositionWithDirection (x, y, direction) {
-	switch (direction) {
+export function setPositionWithDirection (x, y, orientation, steps) {
+	switch (orientation) {
 		case 'down':
-			y++
+			y = y + steps
 			break
 
 		case 'up':
-			y--
+			y = y - steps
 			break
 
 		case 'right':
-			x++
+			x = x + steps
 			break
 
 		case 'left':
-			x--
+			x = x - steps
 			break
 	}
 	return {x, y}
