@@ -4,8 +4,7 @@ const Fiber = require('fibers')
 import Layer from './layer'
 import {config} from '../config'
 import {Ghost, Player} from './ghost'
-import {guid, setPositionWithDirection} from './utils'
-const Promise = require('promise')
+import {guid} from './utils'
 
 if(Meteor.isServer) {
 	Meteor.startup(() => {
@@ -17,6 +16,15 @@ if(Meteor.isServer) {
 		}))
 		// GAME
 		const game = new Game()
+		Streamy.on('gameStream', (message) => {
+			if (message.data) {
+				data = message.data
+				if (game.playersById[data.id]) {
+					game.playersById[data.id].x = data.x
+					game.playersById[data.id].y = data.y
+				}
+			}
+		});
 		game.addGhosts()
 		game.startGhostMoving()
 		// ROUTE
@@ -33,7 +41,6 @@ if(Meteor.isServer) {
 		})
 	})
 }
-
 class Game {
   constructor (map) {
 		// PARAMETERS
@@ -61,12 +68,12 @@ class Game {
 		const refSize = this.getRefSize()
 		const newPlayer = new Player()
 		const position = this.getFreePosition(newPlayer)
-		console.log('position --> ', position)
 		newPlayer.setPosition({
 			x: position.x * refSize,
 			y: position.y * refSize
 		})
 		this.playersById[newPlayer.id] = newPlayer
+		Streamy.broadcast('newPlayer', {data: newPlayer})
 		return newPlayer
 	}
 	addGhosts () {
@@ -75,8 +82,8 @@ class Game {
 			const newGhost = new Ghost()
 			const position = this.getFreePosition(newGhost)
 			newGhost.setPosition({
-				x: position.x * refSize,
-				y: position.y * refSize
+				x: position.x * refSize + (refSize - (config.ghost.size[0] * config.ghost.scale[0])) / 2,
+				y: position.y * refSize + (refSize - (config.ghost.size[1] * config.ghost.scale[1])) / 2
 			})
 			this.ghostsById[newGhost.id] = newGhost
 		}
@@ -103,8 +110,14 @@ class Game {
 		// Check on all layers
 		Object.keys(this.layers).forEach((layerName) => {
 			const layer = this.layers[layerName]
-			if (!stop && _.indexOf(canHover, layer.matrix[y][x].val) > - 1) free = true
-			else {
+			if (
+					!stop &&
+					layer.matrix[y] &&
+					layer.matrix[y][x] &&
+					_.indexOf(canHover, layer.matrix[y][x].val) > - 1
+			) {
+				free = true
+			} else {
 				free = false
 				stop = true
 			}
@@ -124,7 +137,6 @@ class Game {
 		.then(
 			(ghost) => {
 				// RESOLVE
-				console.log('broadcast ', ghost.x, ' ', ghost.y)
 				Streamy.broadcast('gameStream', {data: ghost})
 				setTimeout(() => {
 					this.move(ghost.id)
@@ -132,31 +144,59 @@ class Game {
 			},
 			(ghost) => {
 				// REJECT
-				console.log('explosion !!!!')
+				console.log('explosion !!!!', ghost)
 			}
-		).catch((error) => {
-		  console.log("error!", error)
-		})
+		)
 	}
 	promise (ghost, deplacements) {
 		return new Promise((resolve, reject) => {
-			var test = 0
-	    while(!this.canMove(ghost)) {
-				console.log(test)
-				ghost.orientation = deplacements[Math.round(Math.random() * 3)]
-				test++
-				if(test > 20) reject(ghost) // lanch explosion
+			for (let test = 0; test < 20; test++) {
+				if (this.canMove(ghost)) {
+					resolve(ghost)
+					break;
+				}
+				else ghost.orientation = deplacements[Math.round(Math.random() * 3)]
 			}
-			resolve(ghost)
+			reject(ghost)
 		})
 	}
 	canMove (ghost) {
 		const refSize = this.getRefSize()
+		const spaceX = (refSize - (config.ghost.size[0] * config.ghost.scale[0])) / 2
+		const spaceY = (refSize - (config.ghost.size[1] * config.ghost.scale[1])) / 2
 		const steps = ghost.velocity
 		const orientation = ghost.orientation
-		const {x, y} = setPositionWithDirection(ghost.x, ghost.y, orientation, steps)
-		const colIndex = Math.floor(x / refSize)
-		const rowIndex = Math.floor(y / refSize)
+		const ghostW = config.ghost.size[0] * config.ghost.scale[0]
+		const ghostH = config.ghost.size[0] * config.ghost.scale[0]
+		let colIndex = 0
+		let rowIndex = 0
+		let x = ghost.x
+		let y = ghost.y
+		switch (orientation) {
+			case 'down':
+				y = y + steps
+				colIndex = Math.floor((x + (ghostW / 2)) / refSize)
+				rowIndex = Math.floor((y + ghostH) / refSize)
+				break
+
+			case 'up':
+				y = y - steps
+				colIndex = Math.floor((x + (ghostW / 2)) / refSize)
+				rowIndex = Math.floor(y / refSize)
+				break
+
+			case 'right':
+				x = x + steps
+				colIndex = Math.floor((x + ghostW) / refSize)
+				rowIndex = Math.floor((y + ghostH / 2) / refSize)
+				break
+
+			case 'left':
+				x = x - steps
+				colIndex = Math.floor(x / refSize)
+				rowIndex = Math.floor((y + (ghostH / 2)) / refSize)
+				break
+		}
 		if (this.isFreePosition(colIndex, rowIndex, ghost.canHover)) {
 			ghost.x = x
 			ghost.y = y

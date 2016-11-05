@@ -15,28 +15,13 @@ injectTapEventPlugin()
 //
 
 const Index = ({layers}) => {
-  const styles = {
-    header: {
-      height: '10vh'
-    },
-    body: {
-      height: '85vh',
-      overflowY: 'auto'
-    },
-    footer: {
-      height: '5vh'
-    }
-  }
   return (
     <MuiThemeProvider>
-      <div style={{
-        height: '100vh',
-        width: '100vh'
-      }}>
+      <div>
       {
         Object.keys(layers).length > 0
         ? <div className='row'>
-            <div style={styles.body} className='col-xs-12 col-sm-12 col-md-12 col-lg-12'>
+            <div className='col-xs-12 col-sm-12 col-md-12 col-lg-12'>
               <GameCanvas />
             </div>
           </div>

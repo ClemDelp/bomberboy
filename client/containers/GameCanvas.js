@@ -10,12 +10,27 @@ import {config} from '../../config'
 //
 const BUFFER_LIMIT = 10
 let buffer = []
+let newPlayerBuffer = []
 
 //
-// STREAM
+// STREAMS
 //
+Streamy.on('newPlayer', function (response) {
+  if (
+    response &&
+    response.data &&
+    response.data.id != mainPlayerObj.id
+  ) newPlayerBuffer.push(response.data)
+})
+
 Streamy.on('gameStream', function (response) {
-  if (response && buffer.length < BUFFER_LIMIT) buffer.push(response.data)
+  if (
+    response &&
+    response.data &&
+    buffer.length < BUFFER_LIMIT &&
+    response.data.id != mainPlayerObj.id
+  ) buffer.push(response.data)
+  if(buffer.length === BUFFER_LIMIT) console.log('buffer full')
 })
 
 //
@@ -23,6 +38,7 @@ Streamy.on('gameStream', function (response) {
 //
 
 var dynamicElementsById = {} // --> all the moving elements
+var mainPlayerObj = {} // --> all the moving elements
 let playersGroup // players group
 var mainPlayer // main player
 var group // ghosts group
@@ -35,16 +51,7 @@ class GameCanvas extends React.Component {
     this.preload = this.preload.bind(this)
     this.update = this.update.bind(this)
     this.renderCanvas = this.renderCanvas.bind(this)
-    // this.getGhostBuffer = this.getGhostBuffer.bind(this)
-    // this.state = {
-    //   ghostBuffer: props.ghostBuffer
-    // }
   }
-
-  // getGhostBuffer () {
-  //   return this.state.getGhostBuffer
-  // }
-
   preload () {
     const {game} = this.state
     game.stage.backgroundColor = '#007236'
@@ -106,14 +113,13 @@ class GameCanvas extends React.Component {
         const player = players[key]
         if (player.val === 3) { // PLAYER
           if (player.id === playerId) { // If it's the main player
+            mainPlayerObj = player
             mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
             mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
             game.physics.arcade.enable(mainPlayer);
             game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
           } else { // Other players
-            var newPlayer = playersGroup.create(player.x, player.y, config.player.name);
-            newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
-            dynamicElementsById[player.id] = newPlayer
+            this.addPlayerToMap(player)
           }
         }
       })
@@ -121,19 +127,27 @@ class GameCanvas extends React.Component {
 
     cursors = game.input.keyboard.createCursorKeys()
   }
-
+  addPlayerToMap (player) {
+    var newPlayer = playersGroup.create(player.x, player.y, config.player.name);
+    newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+    dynamicElementsById[player.id] = newPlayer
+  }
   update () {
     const {game} = this.state
     // SET COLLISIONS
     game.physics.arcade.collide(mainPlayer, ghostsGroup, this.collisionHandler, null, this);
-    // BUFFER MANAGER
+    // BUFFERS MANAGERS
     if (buffer.length > 0) {
       const element = buffer.shift()
-      if (element.type === config.ghost.name) {
-        console.log('element --> ', element)
+      if (dynamicElementsById[element.id]) {
         dynamicElementsById[element.id].x = element.x
         dynamicElementsById[element.id].y = element.y
       }
+    }
+    if (newPlayerBuffer.length > 0) {
+      console.log('new player !!!')
+      const newPlayer = newPlayerBuffer.shift()
+      this.addPlayerToMap(newPlayer)
     }
     // MAIN USER DEPLACEMENTS
     mainPlayer.body.velocity.x = 0;
@@ -141,22 +155,33 @@ class GameCanvas extends React.Component {
     if (cursors.left.isDown)
     {
         mainPlayer.body.velocity.x = -200;
+        this.updateMainPlayerObj()
     }
     else if (cursors.right.isDown)
     {
         mainPlayer.body.velocity.x = 200;
+        this.updateMainPlayerObj()
     }
 
     if (cursors.up.isDown)
     {
         mainPlayer.body.velocity.y = -200;
+        this.updateMainPlayerObj()
     }
     else if (cursors.down.isDown)
     {
         mainPlayer.body.velocity.y = 200;
+        this.updateMainPlayerObj()
     }
   }
-
+  updateMainPlayerObj () {
+    mainPlayerObj.x = mainPlayer.x
+    mainPlayerObj.y = mainPlayer.y
+    // for client
+    Streamy.broadcast('gameStream', { data: mainPlayerObj })
+    // for server
+    Streamy.emit('gameStream', { data: mainPlayerObj })
+  }
   collisionHandler (player, block) {
     // here put the collision logic
   }
@@ -171,9 +196,11 @@ class GameCanvas extends React.Component {
     var cursors;
     var logo1;
     var logo2;
+    console.log(window.innerHeight)
+    console.log(window.innerWidth)
     var game = new Phaser.Game(
-      800,
-      600,
+      window.innerWidth,
+      window.innerHeight,
       Phaser.CANVAS,
       'phaser-example',
       {
@@ -184,16 +211,6 @@ class GameCanvas extends React.Component {
       })
     this.setState({game})
   }
-
-  // after first time
-  componentDidUpdate () {
-
-  }
-
-  // componentWillReceiveProps (nextProps) {
-  //     // console.log('nextProps', nextProps)
-  //     this.setState({ghostBuffer: nextProps.ghostBuffer})
-  // }
 
   render () {
     return (
