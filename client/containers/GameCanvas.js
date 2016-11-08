@@ -4,11 +4,12 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import {config} from '../../config'
+import {arrayToCsv} from '../utils/arrayToCsv'
 
 //
 // ENV
 //
-const BUFFER_LIMIT = 10
+const BUFFER_LIMIT = 10000000
 let buffer = []
 let newPlayerBuffer = []
 
@@ -36,13 +37,13 @@ Streamy.on('gameStream', function (response) {
 //
 // COMPONENT
 //
-
 var dynamicElementsById = {} // --> all the moving elements
 var mainPlayerObj = {} // --> all the moving elements
 let playersGroup // players group
 var mainPlayer // main player
 var group // ghosts group
 var cursors;
+var textElements = []
 
 class GameCanvas extends React.Component {
   constructor (props) {
@@ -50,6 +51,7 @@ class GameCanvas extends React.Component {
     this.create = this.create.bind(this)
     this.preload = this.preload.bind(this)
     this.update = this.update.bind(this)
+    this.attachTextToSprite = this.attachTextToSprite.bind(this)
     this.renderCanvas = this.renderCanvas.bind(this)
   }
   preload () {
@@ -58,6 +60,7 @@ class GameCanvas extends React.Component {
     game.load.image(config.player.name, config.player.img);
     game.load.image(config.block.name, config.block.img);
     game.load.image(config.ghost.name, config.ghost.img)
+    game.load.image('tiles', 'assets/sprites/tilemap.jpg');
   }
 
   create () {
@@ -77,9 +80,34 @@ class GameCanvas extends React.Component {
     ghostsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
     playersGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
 
-
     // RENDER MAP LAYERS
     if (layers) {
+      //  Creates a new blank layer and sets the map dimensions.
+      //  In this case the map is 40x30 tiles in size and the tiles are 32x32 pixels in size.
+      // let map_layer = layers.map
+      // console.log(map_layer)
+      // const tile_height = map_layer.rows
+      // const tile_width = map_layer.cols
+      // let refSize = map_layer.elementRef.size[0] * map_layer.elementRef.scale[0]
+      // const csv = arrayToCsv(map_layer)
+      // //  Add data to the cache
+      // console.log(csv)
+      // game.cache.addTilemap('dynamicMap', null, csv, Phaser.Tilemap.CSV);
+      //
+      // //  Create our map (the 16x16 is the tile size)
+      // refSize = 45
+      // map = game.add.tilemap('dynamicMap', refSize, refSize);
+      // console.log(map)
+      // //  'tiles' = cache image key, 16x16 = tile size
+      // map.addTilesetImage('tiles', 'tiles', refSize, refSize);
+      //
+      // //  0 is important
+      // layer = map.createLayer(0);
+      //
+      // //  Scroll it
+      // layer.resizeWorld();
+
+
       Object.keys(layers).forEach((layerName, index) => {
         const layer = layers[layerName]
         for (var y = 0; y < layer.matrix.length; y++) {
@@ -99,38 +127,57 @@ class GameCanvas extends React.Component {
     if (ghosts) {
       Object.keys(ghosts).forEach((key) => {
         const ghost = ghosts[key]
-        if (ghost.val === 2) { // GHOST
-          const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
-          // newGhost.anchor.setTo(-0.9, -0.9);
-          newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
-          dynamicElementsById[ghost.id] = newGhost
-        }
+        const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
+        // newGhost.anchor.setTo(-0.9, -0.9);
+        newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
+        dynamicElementsById[ghost.id] = newGhost
+        this.attachTextToSprite(newGhost, ghost.name)
       })
     }
 
     if (players) {
       Object.keys(players).forEach((key) => {
         const player = players[key]
-        if (player.val === 3) { // PLAYER
-          if (player.id === playerId) { // If it's the main player
-            mainPlayerObj = player
-            mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
-            mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
-            game.physics.arcade.enable(mainPlayer);
-            game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-          } else { // Other players
-            this.addPlayerToMap(player)
-          }
+        if (player.id === playerId) { // If it's the main player
+          mainPlayerObj = player
+          mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
+          mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+          game.physics.arcade.enable(mainPlayer)
+          // attach camera to main player
+          game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
+          // add player name above
+          this.attachTextToSprite(mainPlayer, player.name)
+        } else { // Other players
+          this.addPlayerToMap(player)
         }
       })
     }
 
     cursors = game.input.keyboard.createCursorKeys()
   }
+  attachTextToSprite (sprite, text) {
+    const {game} = this.state
+    var style = {
+      font: "15px Arial",
+      fill: "#ff0044",
+      wordWrap: true,
+      wordWrapWidth: sprite.width,
+      align: "center"
+    }
+    let textElement = game.add.text(sprite.x, sprite.y - sprite.height, text, style)
+    textElement.anchor.set(0.5)
+    textElements.push({
+      element: textElement,
+      sprite: sprite
+    })
+
+  }
   addPlayerToMap (player) {
     var newPlayer = playersGroup.create(player.x, player.y, config.player.name);
     newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
     dynamicElementsById[player.id] = newPlayer
+    // add player name above
+    this.attachTextToSprite(newPlayer, player.name)
   }
   update () {
     const {game} = this.state
@@ -173,6 +220,11 @@ class GameCanvas extends React.Component {
         mainPlayer.body.velocity.y = 200;
         this.updateMainPlayerObj()
     }
+    // update text elements positions
+    textElements.forEach((textElement) => {
+      textElement.element.x = Math.floor(textElement.sprite.x + textElement.sprite.width / 2)
+      textElement.element.y = Math.floor(textElement.sprite.y - 10)
+    })
   }
   updateMainPlayerObj () {
     mainPlayerObj.x = mainPlayer.x

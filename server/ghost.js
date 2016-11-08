@@ -1,8 +1,10 @@
 import {guid} from './utils'
 import {config} from '../config'
+import eden from 'node-eden'
 
 class Element {
   constructor () {
+    this.name = eden.adam()
     this.x = null
     this.y = null
     this.id = guid()
@@ -19,7 +21,6 @@ export class Ghost extends Element {
     super()
     const {ghost} = config
     this.type = ghost.name
-    this.val = ghost.val
     this.canHover = ghost.canHover
     this.orientation = ghost.orientation
     this.velocity = ghost.velocity
@@ -31,7 +32,6 @@ export class Player extends Element {
     super()
     const {player} = config
     this.type = player.name
-    this.val = player.val
     this.canHover = player.canHover
     this.orientation = player.orientation
     this.velocity = player.velocity

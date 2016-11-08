@@ -1,7 +1,7 @@
 export const config = {
   map: {
-    rows: 10,
-    cols: 10
+    rows: 20,
+    cols: 20
   },
   // BLOC
   block: {
@@ -16,7 +16,6 @@ export const config = {
     size: [27, 40],
     scale: [0.8, 0.8],
     img: 'assets/sprites/phaser-dude.png',
-    val: 3,
     canHover: [0],
     orientation: 'down'
   },
@@ -26,8 +25,7 @@ export const config = {
     size: [32, 32],
     scale: [1, 1],
     img: 'assets/sprites/ghost-icon.png',
-    initNumber: 1,
-    val: 2,
+    initNumber: 10,
     canHover: [0],
     orientation: 'down',
     velocity: 5 // px per move
