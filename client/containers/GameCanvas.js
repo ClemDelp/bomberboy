@@ -9,7 +9,7 @@ import {arrayToCsv} from '../utils/arrayToCsv'
 //
 // ENV
 //
-const BUFFER_LIMIT = 10000000
+const BUFFER_LIMIT = 100
 let buffer = []
 let newPlayerBuffer = []
 
@@ -185,11 +185,15 @@ class GameCanvas extends React.Component {
     game.physics.arcade.collide(mainPlayer, ghostsGroup, this.collisionHandler, null, this);
     // BUFFERS MANAGERS
     if (buffer.length > 0) {
-      const element = buffer.shift()
-      if (dynamicElementsById[element.id]) {
-        dynamicElementsById[element.id].x = element.x
-        dynamicElementsById[element.id].y = element.y
-      }
+      // const element =
+      buffer.forEach((element) => {
+        buffer.shift()
+        if (dynamicElementsById[element.id]) {
+          dynamicElementsById[element.id].x = element.x
+          dynamicElementsById[element.id].y = element.y
+        }
+      })
+
     }
     if (newPlayerBuffer.length > 0) {
       console.log('new player !!!')
