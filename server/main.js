@@ -2,9 +2,9 @@ import { Meteor } from 'meteor/meteor'
 import bodyParser from 'body-parser'
 const Fiber = require('fibers')
 import Layer from './layer'
-import {config} from '../config'
+import {config, layers} from '../config'
 import {Ghost, Player} from './ghost'
-import {guid} from './utils'
+import {guid, getRandomInt} from './utils'
 
 if(Meteor.isServer) {
 	Meteor.startup(() => {
@@ -47,22 +47,35 @@ class Game {
 		this.ghostsById = {}
 		this.playersById = {}
 		this.layers = {}
-		// SET MAP LAYER
-		let mapLayer = new Layer()
-		for(var y = 0; y < mapLayer.cols; y++) {
-      for(var x = 0; x < mapLayer.rows; x++) {
-        var val = 0
-				if(Math.random() * 10 % 2 > 1) val = 1
-        mapLayer.setVal(x, y, val)
+		// SET GROUND LAYER
+		let groundLayer = new Layer()
+		for(var y = 0; y < groundLayer.cols; y++) {
+      for(var x = 0; x < groundLayer.rows; x++) {
+        var elIndex = getRandomInt(0, layers.groundLayer.elements.length - 1)
+				var el = layers.groundLayer.elements[elIndex]
+        groundLayer.setVal(x, y, el)
+      }
+    }
+		// SET BLOCK LAYER
+		let blockLayer = new Layer()
+		for(var y = 0; y < blockLayer.cols; y++) {
+      for(var x = 0; x < blockLayer.rows; x++) {
+				var val = 0
+				if(Math.random() * 10 % 2 > 1) {
+					var elIndex = getRandomInt(0, layers.blockLayer.elements.length - 1)
+					var val = layers.blockLayer.elements[elIndex]
+        }
+        blockLayer.setVal(x, y, val)
       }
     }
 		// DEFINE LAYERS
 		this.layers = {
-			'map': mapLayer
+			'map': groundLayer,
+			'block': blockLayer
 		}
   }
 	getRefSize () {
-		return this.layers.map.elementRef.size[0] * this.layers.map.elementRef.scale[0]
+		return config.map.squareSize
 	}
 	addPlayer () {
 		const refSize = this.getRefSize()
@@ -78,7 +91,7 @@ class Game {
 	}
 	addGhosts () {
 		const refSize = this.getRefSize()
-		for (let i = 0; i < config.ghost.initNumber; i++) {
+		for (let i = 0; i < config.map.defaultGhostNumber; i++) {
 			const newGhost = new Ghost()
 			const position = this.getFreePosition(newGhost)
 			newGhost.setPosition({
@@ -108,20 +121,18 @@ class Game {
 		let free = false
 		let stop = false
 		// Check on all layers
-		Object.keys(this.layers).forEach((layerName) => {
-			const layer = this.layers[layerName]
-			if (
-					!stop &&
-					layer.matrix[y] &&
-					layer.matrix[y][x] &&
-					_.indexOf(canHover, layer.matrix[y][x].val) > - 1
-			) {
-				free = true
-			} else {
-				free = false
-				stop = true
-			}
-		})
+		const layer = this.layers.block
+		if (
+				!stop &&
+				layer.matrix[y] &&
+				layer.matrix[y][x] &&
+				_.indexOf(canHover, layer.matrix[y][x].val) > - 1
+		) {
+			free = true
+		} else {
+			free = false
+			stop = true
+		}
 		return free
 	}
 	startGhostMoving () {
@@ -144,7 +155,7 @@ class Game {
 			},
 			(ghost) => {
 				// REJECT
-				console.log('explosion !!!!', ghost)
+				console.log('explosion !!!!')
 			}
 		)
 	}

@@ -6,7 +6,7 @@ export default class Layer {
     const {map, box} = config
     this.rows = map.rows
 	  this.cols = map.cols
-    this.elementRef = config.block
+    this.refSize = config.map.squareSize
     // create the matrix
     this.matrix = []
     // default matrix value
