@@ -44,6 +44,8 @@ var mainPlayer // main player
 var group // ghosts group
 var cursors;
 var textElements = []
+var blockGroup;
+var blocks = []
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
 
@@ -84,7 +86,7 @@ class GameCanvas extends React.Component {
     game.stage.backgroundColor = '#2d2d2d';
     game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM;
     // CREATE GROUPS
-    ghostsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
+    blockGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
     playersGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
 
     // RENDER MAP LAYERS
@@ -124,13 +126,14 @@ class GameCanvas extends React.Component {
             if (element.val && element.val.type) {
               switch (element.val.type) {
                 case 'block':
-                  // var block = game.add.sprite(x * refSize, y * refSize, 'tilemap');
-                  var block = ghostsGroup.create(x * refSize, y * refSize, 'tilemap')
+                  var block = blockGroup.create(x * refSize, y * refSize, 'tilemap')
+                  const block_width = block.body.width
+                  const block_height = block.body.height
+                  block.body.setSize(block_width, block_height / 2, 0, (block_height / 2) / 2) // width, height, offsetX, offsetY
                   block.frame = element.val.frame
                   block.scale.setTo(element.val.scale[0], element.val.scale[1])
-                  // var block = ghostsGroup.create(x * refSize, y * refSize, element.val.name);
-                  // block.scale.setTo(element.val.scale[0], element.val.scale[1]);
                   block.body.immovable = true
+                  blocks.push(block)
                   break
 
                 case 'ground':
@@ -216,7 +219,7 @@ class GameCanvas extends React.Component {
   update () {
     const {game} = this.state
     // SET COLLISIONS
-    game.physics.arcade.collide(mainPlayer, ghostsGroup, this.collisionHandler, null, this);
+    game.physics.arcade.collide(mainPlayer, blockGroup, this.collisionHandler, null, this);
     // BUFFERS MANAGERS
     if (buffer.length > 0) {
       // const element =
@@ -277,6 +280,9 @@ class GameCanvas extends React.Component {
 
   renderCanvas () {
     const {game} = this.state
+    blocks.forEach((block) => {
+        game.debug.body(block)
+    })
     // game.debug.cameraInfo(game.camera, 32, 32);
   }
 
