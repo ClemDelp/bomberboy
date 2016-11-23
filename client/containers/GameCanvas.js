@@ -45,7 +45,6 @@ var group // ghosts group
 var cursors;
 var textElements = []
 var blockGroup;
-var blocks = []
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
 
@@ -133,7 +132,6 @@ class GameCanvas extends React.Component {
                   block.frame = element.val.frame
                   block.scale.setTo(element.val.scale[0], element.val.scale[1])
                   block.body.immovable = true
-                  blocks.push(block)
                   break
 
                 case 'ground':
@@ -171,7 +169,8 @@ class GameCanvas extends React.Component {
         const player = players[key]
         if (player.id === playerId) { // If it's the main player
           mainPlayerObj = player
-          mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
+          mainPlayer = blockGroup.create(player.x, player.y, config.player.name)
+          // mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
           mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
           game.physics.arcade.enable(mainPlayer)
           // attach camera to main player
@@ -184,6 +183,12 @@ class GameCanvas extends React.Component {
       })
     }
     cursors = game.input.keyboard.createCursorKeys()
+    blockGroup.sort()
+    // console.log(blockGroup)
+    // console.log(blockGroup.iterate('key', 'tilemap', Phaser.Group.RETURN_CHILD))
+    // var card = blockGroup.iterate('key', 'card', Phaser.Group.RETURN_CHILD);
+
+
   }
   drawRect (graphics, shape, lineStyle, fill) {
     // draw a rectangle
@@ -210,7 +215,7 @@ class GameCanvas extends React.Component {
 
   }
   addPlayerToMap (player) {
-    var newPlayer = playersGroup.create(player.x, player.y, config.player.name);
+    var newPlayer = blockGroup.create(player.x, player.y, config.player.name);
     newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
     dynamicElementsById[player.id] = newPlayer
     // add player name above
@@ -219,7 +224,11 @@ class GameCanvas extends React.Component {
   update () {
     const {game} = this.state
     // SET COLLISIONS
-    game.physics.arcade.collide(mainPlayer, blockGroup, this.collisionHandler, null, this);
+    // game.physics.arcade.collide(blockGroup, blockGroup, this.collisionHandler, null, this);
+    var blocks = blockGroup.children.map((child) => {
+      if (child.key === "tilemap") return child
+    })
+    game.physics.arcade.collide(mainPlayer, blocks, this.collisionHandler, null, this);
     // BUFFERS MANAGERS
     if (buffer.length > 0) {
       // const element =
@@ -265,6 +274,8 @@ class GameCanvas extends React.Component {
       textElement.element.x = Math.floor(textElement.sprite.x + textElement.sprite.width / 2)
       textElement.element.y = Math.floor(textElement.sprite.y - 10)
     })
+    // re order Z depth
+    blockGroup.sort('y', Phaser.Group.SORT_ASCENDING);
   }
   updateMainPlayerObj () {
     mainPlayerObj.x = mainPlayer.x
@@ -280,10 +291,11 @@ class GameCanvas extends React.Component {
 
   renderCanvas () {
     const {game} = this.state
-    blocks.forEach((block) => {
-        game.debug.body(block)
-    })
+    // blockGroup.hash.forEach((block) => {
+    //     game.debug.body(block)
+    // })
     // game.debug.cameraInfo(game.camera, 32, 32);
+    // game.debug.text('Sprite z-depth: ' + mainPlayer.z, 10, 20);
   }
 
   // first time

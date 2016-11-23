@@ -16,7 +16,7 @@ export const config = {
     name: 'block_2',
     type: 'block',
     size: [713, 129],
-    scale: [0.37, 0.3],
+    scale: [0.37, 0.4],
     spriteSheet: 'assets/sprites/tilemap.png'
   },
   // PLYAER
