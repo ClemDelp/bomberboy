@@ -101,7 +101,7 @@ class GameCanvas extends React.Component {
               switch (element.val.type) {
 
                 case 'block':
-                  var block = blockGroup.create(x * refSize, y * refSize, 'tilemap')
+                  var block = blockGroup.create(x * refSize, y * refSize - 14, 'tilemap')
                   const block_width = block.body.width
                   const block_height = block.body.height
                   block.body.setSize(block_width, block_height / 2, 0, (block_height / 2) / 2) // width, height, offsetX, offsetY
