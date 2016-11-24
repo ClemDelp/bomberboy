@@ -148,13 +148,20 @@ class Game {
 		.then(
 			(ghost) => {
 				// RESOLVE
-				Streamy.broadcast('gameStream', {data: ghost})
+				Streamy.broadcast('gameStream', {
+					type: 'mvt',
+					data: ghost
+				})
 				setTimeout(() => {
 					this.move(ghost.id)
 				}, 100)
 			},
 			(ghost) => {
 				// REJECT
+				Streamy.broadcast('gameStream', {
+					type: 'explosion',
+					data: [ghost.x, ghost.y]
+				})
 				console.log('explosion !!!!')
 			}
 		)

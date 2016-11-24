@@ -1,9 +1,9 @@
 export const config = {
   map: {
-    rows: 20,
-    cols: 20,
+    rows: 10,
+    cols: 10,
     squareSize: 38,
-    defaultGhostNumber: 10,
+    defaultGhostNumber: 15,
   },
   block: {
     name: 'block',

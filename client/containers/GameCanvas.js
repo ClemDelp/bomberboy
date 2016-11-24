@@ -19,18 +19,17 @@ let newPlayerBuffer = []
 Streamy.on('newPlayer', function (response) {
   if (
     response &&
-    response.data &&
-    response.data.id != mainPlayerObj.id
+    response.data
   ) newPlayerBuffer.push(response.data)
 })
 
 Streamy.on('gameStream', function (response) {
   if (
     response &&
+    response.type &&
     response.data &&
-    buffer.length < BUFFER_LIMIT &&
-    response.data.id != mainPlayerObj.id
-  ) buffer.push(response.data)
+    buffer.length < BUFFER_LIMIT
+  ) buffer.push(response)
   if(buffer.length === BUFFER_LIMIT) console.log('buffer full')
 })
 
@@ -57,9 +56,10 @@ class GameCanvas extends React.Component {
     this.attachTextToSprite = this.attachTextToSprite.bind(this)
     this.renderCanvas = this.renderCanvas.bind(this)
     this.drawRect = this.drawRect.bind(this)
+    this.addExplosion = this.addExplosion.bind(this)
   }
   preload () {
-    const {game,} = this.state
+    const {game} = this.state
     game.stage.backgroundColor = '#007236'
     Object.keys(config).forEach((key) => {
       const el = config[key]
@@ -67,7 +67,8 @@ class GameCanvas extends React.Component {
       console.log(el.img)
     })
     // game.load.image('tiles', 'assets/sprites/tilemap.png');
-    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129);
+    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129)
+    game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
   }
 
   create () {
@@ -90,32 +91,6 @@ class GameCanvas extends React.Component {
 
     // RENDER MAP LAYERS
     if (layers) {
-      //  Creates a new blank layer and sets the map dimensions.
-      //  In this case the map is 40x30 tiles in size and the tiles are 32x32 pixels in size.
-      // let blockLayer = layers.block
-      // console.log(blockLayer)
-      // const tile_height = blockLayer.rows
-      // const tile_width = blockLayer.cols
-      // let refSize = config.map.squareSize
-      // const csv = arrayToCsv(blockLayer)
-      // //  Add data to the cache
-      // console.log(csv)
-      // game.cache.addTilemap('dynamicMap', null, csv, Phaser.Tilemap.CSV);
-
-      //  Create our map (the 16x16 is the tile size)
-      // refSize = 45
-      // map = game.add.tilemap('dynamicMap', refSize, refSize);
-      // console.log(map)
-      // //  'tiles' = cache image key, 16x16 = tile size
-      // map.addTilesetImage('tiles', 'tiles', refSize, refSize);
-      //
-      // //  0 is important
-      // layer = map.createLayer(0);
-      //
-      // //  Scroll it
-      // layer.resizeWorld();
-
-
       Object.keys(layers).forEach((layerName, index) => {
         const layer = layers[layerName]
         for (var y = 0; y < layer.matrix.length; y++) {
@@ -124,6 +99,7 @@ class GameCanvas extends React.Component {
             const refSize = layer.refSize
             if (element.val && element.val.type) {
               switch (element.val.type) {
+
                 case 'block':
                   var block = blockGroup.create(x * refSize, y * refSize, 'tilemap')
                   const block_width = block.body.width
@@ -157,7 +133,6 @@ class GameCanvas extends React.Component {
       Object.keys(ghosts).forEach((key) => {
         const ghost = ghosts[key]
         const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
-        // newGhost.anchor.setTo(-0.9, -0.9);
         newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
         dynamicElementsById[ghost.id] = newGhost
         this.attachTextToSprite(newGhost, ghost.name)
@@ -184,11 +159,18 @@ class GameCanvas extends React.Component {
     }
     cursors = game.input.keyboard.createCursorKeys()
     blockGroup.sort()
-    // console.log(blockGroup)
-    // console.log(blockGroup.iterate('key', 'tilemap', Phaser.Group.RETURN_CHILD))
-    // var card = blockGroup.iterate('key', 'card', Phaser.Group.RETURN_CHILD);
-
-
+  }
+  addExplosion (x, y) {
+    const {game} = this.state
+    var explosion = game.add.sprite(x, y, 'boom');
+    explosion.anchor.set(0.5)
+    //  Here we add a new animation called 'walk'
+    //  Because we didn't give any other parameters it's going to make an animation from all available frames in the 'mummy' sprite sheet
+    var boom = explosion.animations.add('boom');
+    //  And this starts the animation playing by using its key ("walk")
+    //  30 is the frame rate (30fps)
+    //  true means it will loop when it finishes
+    explosion.animations.play('boom', 10, false);
   }
   drawRect (graphics, shape, lineStyle, fill) {
     // draw a rectangle
@@ -234,10 +216,23 @@ class GameCanvas extends React.Component {
       // const element =
       buffer.forEach((element) => {
         buffer.shift()
-        if (dynamicElementsById[element.id]) {
-          dynamicElementsById[element.id].x = element.x
-          dynamicElementsById[element.id].y = element.y
+        const {type, data} = element
+        switch (type) {
+          case 'mvt':
+            if (
+              data.id != mainPlayerObj.id &&
+              dynamicElementsById[data.id]
+            ) {
+              dynamicElementsById[data.id].x = data.x
+              dynamicElementsById[data.id].y = data.y
+            }
+            break;
+          case 'explosion':
+            this.addExplosion(data[0], data[1])
+            break
+
         }
+
       })
     }
     if (newPlayerBuffer.length > 0) {
@@ -281,7 +276,10 @@ class GameCanvas extends React.Component {
     mainPlayerObj.x = mainPlayer.x
     mainPlayerObj.y = mainPlayer.y
     // for client
-    Streamy.broadcast('gameStream', { data: mainPlayerObj })
+    Streamy.broadcast('gameStream', {
+      type: 'mvt',
+      data: mainPlayerObj
+    })
     // for server
     Streamy.emit('gameStream', { data: mainPlayerObj })
   }
