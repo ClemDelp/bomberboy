@@ -25,8 +25,7 @@ if(Meteor.isServer) {
 				}
 			}
 		});
-		game.addGhosts()
-		game.startGhostMoving()
+		game.initGhosts()
 		// ROUTE
 		app.get('/getContextGame', function (req, res) {
 			const player = game.addPlayer()
@@ -89,17 +88,23 @@ class Game {
 		Streamy.broadcast('newPlayer', {data: newPlayer})
 		return newPlayer
 	}
-	addGhosts () {
-		const refSize = this.getRefSize()
+	initGhosts () {
 		for (let i = 0; i < config.map.defaultGhostNumber; i++) {
-			const newGhost = new Ghost()
-			const position = this.getFreePosition(newGhost)
-			newGhost.setPosition({
-				x: position.x * refSize + (refSize - (config.ghost.size[0] * config.ghost.scale[0])) / 2,
-				y: position.y * refSize + (refSize - (config.ghost.size[1] * config.ghost.scale[1])) / 2
-			})
-			this.ghostsById[newGhost.id] = newGhost
+			this.addGhost()
 		}
+	}
+	addGhost () {
+		const refSize = this.getRefSize()
+		console.log('new ghost')
+		const newGhost = new Ghost()
+		const position = this.getFreePosition(newGhost)
+		newGhost.setPosition({
+			x: position.x * refSize + (refSize - (config.ghost.size[0] * config.ghost.scale[0])) / 2,
+			y: position.y * refSize + (refSize - (config.ghost.size[1] * config.ghost.scale[1])) / 2
+		})
+		this.ghostsById[newGhost.id] = newGhost
+		console.log(newGhost.id, ' start moving...')
+		this.move(newGhost.id)
 	}
 	getFreePosition (element) {
 		if (element) {
@@ -135,12 +140,6 @@ class Game {
 		}
 		return free
 	}
-	startGhostMoving () {
-		Object.keys(this.ghostsById).forEach((id, index) => {
-			console.log(id, ' start moving...')
-			this.move(id)
-		})
-	}
 	move (id) {
 		const ghost = this.ghostsById[id]
 		const deplacements = ghost.deplacements
@@ -159,16 +158,17 @@ class Game {
 			(ghost) => {
 				// REJECT
 				Streamy.broadcast('gameStream', {
-					type: 'explosion',
-					data: [ghost.x, ghost.y]
+					type: 'rm',
+					data: ghost
 				})
+				delete this.ghostsById[ghost.id]
 				console.log('explosion !!!!')
 			}
 		)
 	}
 	promise (ghost, deplacements) {
 		return new Promise((resolve, reject) => {
-			for (let test = 0; test < 20; test++) {
+			for (let test = 0; test < config.ghost.triesBeforeExplosion; test++) {
 				if (this.canMove(ghost)) {
 					resolve(ghost)
 					break;

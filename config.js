@@ -3,7 +3,7 @@ export const config = {
     rows: 10,
     cols: 10,
     squareSize: 38,
-    defaultGhostNumber: 15,
+    defaultGhostNumber: 10
   },
   block: {
     name: 'block',
@@ -36,7 +36,8 @@ export const config = {
     img: 'assets/sprites/ghost-icon.png',
     canHover: [0],
     orientation: 'down',
-    velocity: 5 // px per move
+    velocity: 5, // px per move
+    triesBeforeExplosion: 11
   }
 }
 

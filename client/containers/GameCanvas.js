@@ -38,12 +38,11 @@ Streamy.on('gameStream', function (response) {
 //
 var dynamicElementsById = {} // --> all the moving elements
 var mainPlayerObj = {} // --> all the moving elements
-let playersGroup // players group
 var mainPlayer // main player
 var group // ghosts group
 var cursors;
 var textElements = []
-var blockGroup;
+var elementsGroup;
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
 
@@ -86,9 +85,7 @@ class GameCanvas extends React.Component {
     game.stage.backgroundColor = '#2d2d2d';
     game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM;
     // CREATE GROUPS
-    blockGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
-    playersGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
-
+    elementsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
     // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
@@ -101,7 +98,8 @@ class GameCanvas extends React.Component {
               switch (element.val.type) {
 
                 case 'block':
-                  var block = blockGroup.create(x * refSize, y * refSize - 14, 'tilemap')
+                  var block = elementsGroup.create(x * refSize, y * refSize, 'tilemap')
+                  dynamicElementsById[element.id] = block
                   const block_width = block.body.width
                   const block_height = block.body.height
                   block.body.setSize(block_width, block_height / 2, 0, (block_height / 2) / 2) // width, height, offsetX, offsetY
@@ -144,7 +142,7 @@ class GameCanvas extends React.Component {
         const player = players[key]
         if (player.id === playerId) { // If it's the main player
           mainPlayerObj = player
-          mainPlayer = blockGroup.create(player.x, player.y, config.player.name)
+          mainPlayer = elementsGroup.create(player.x, player.y, config.player.name)
           // mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
           mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
           game.physics.arcade.enable(mainPlayer)
@@ -158,7 +156,7 @@ class GameCanvas extends React.Component {
       })
     }
     cursors = game.input.keyboard.createCursorKeys()
-    blockGroup.sort()
+    elementsGroup.sort()
   }
   addExplosion (x, y) {
     const {game} = this.state
@@ -197,17 +195,23 @@ class GameCanvas extends React.Component {
 
   }
   addPlayerToMap (player) {
-    var newPlayer = blockGroup.create(player.x, player.y, config.player.name);
+    var newPlayer = elementsGroup.create(player.x, player.y, config.player.name);
     newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
     dynamicElementsById[player.id] = newPlayer
     // add player name above
     this.attachTextToSprite(newPlayer, player.name)
   }
+  removeElement (element, explosion) {
+    if (explosion) this.addExplosion(element.x, element.y)
+    sprite = dynamicElementsById[element.id]
+    elementsGroup.remove(sprite)
+    sprite.destroy()
+  }
   update () {
     const {game} = this.state
     // SET COLLISIONS
-    // game.physics.arcade.collide(blockGroup, blockGroup, this.collisionHandler, null, this);
-    var blocks = blockGroup.children.map((child) => {
+    // game.physics.arcade.collide(elementsGroup, elementsGroup, this.collisionHandler, null, this);
+    var blocks = elementsGroup.children.map((child) => {
       if (child.key === "tilemap") return child
     })
     game.physics.arcade.collide(mainPlayer, blocks, this.collisionHandler, null, this);
@@ -218,6 +222,7 @@ class GameCanvas extends React.Component {
         buffer.shift()
         const {type, data} = element
         switch (type) {
+          // move element
           case 'mvt':
             if (
               data.id != mainPlayerObj.id &&
@@ -227,8 +232,9 @@ class GameCanvas extends React.Component {
               dynamicElementsById[data.id].y = data.y
             }
             break;
-          case 'explosion':
-            this.addExplosion(data[0], data[1])
+          // remove element
+          case 'rm':
+            this.removeElement(data, true)
             break
 
         }
@@ -270,7 +276,7 @@ class GameCanvas extends React.Component {
       textElement.element.y = Math.floor(textElement.sprite.y - 10)
     })
     // re order Z depth
-    blockGroup.sort('y', Phaser.Group.SORT_ASCENDING);
+    elementsGroup.sort('y', Phaser.Group.SORT_ASCENDING);
   }
   updateMainPlayerObj () {
     mainPlayerObj.x = mainPlayer.x
@@ -289,7 +295,7 @@ class GameCanvas extends React.Component {
 
   renderCanvas () {
     const {game} = this.state
-    // blockGroup.hash.forEach((block) => {
+    // elementsGroup.hash.forEach((block) => {
     //     game.debug.body(block)
     // })
     // game.debug.cameraInfo(game.camera, 32, 32);
