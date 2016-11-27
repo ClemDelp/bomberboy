@@ -3,7 +3,7 @@ export const config = {
     rows: 10,
     cols: 10,
     squareSize: 38,
-    defaultGhostNumber: 10
+    defaultGhostNumber: 1
   },
   block: {
     name: 'block',
@@ -37,7 +37,8 @@ export const config = {
     canHover: [0],
     orientation: 'down',
     velocity: 5, // px per move
-    triesBeforeExplosion: 11
+    speed: 100,
+    triesBeforeExplosion: 2
   }
 }
 

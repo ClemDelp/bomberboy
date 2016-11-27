@@ -105,6 +105,7 @@ class Game {
 		this.ghostsById[newGhost.id] = newGhost
 		console.log(newGhost.id, ' start moving...')
 		this.move(newGhost.id)
+		return newGhost
 	}
 	getFreePosition (element) {
 		if (element) {
@@ -153,16 +154,24 @@ class Game {
 				})
 				setTimeout(() => {
 					this.move(ghost.id)
-				}, 100)
+				}, config.ghost.speed)
 			},
 			(ghost) => {
-				// REJECT
+				// remove ghost
 				Streamy.broadcast('gameStream', {
 					type: 'rm',
 					data: ghost
 				})
 				delete this.ghostsById[ghost.id]
 				console.log('explosion !!!!')
+				// create new ghost 2 second after
+				setTimeout(() => {
+					const newGhost = this.addGhost()
+					Streamy.broadcast('gameStream', {
+						type: 'add',
+						data: newGhost
+					})
+				}, 2000)
 			}
 		)
 	}

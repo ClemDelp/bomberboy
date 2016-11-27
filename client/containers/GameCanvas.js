@@ -41,7 +41,7 @@ var mainPlayerObj = {} // --> all the moving elements
 var mainPlayer // main player
 var group // ghosts group
 var cursors;
-var textElements = []
+var textElements = {}
 var elementsGroup;
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
@@ -130,10 +130,7 @@ class GameCanvas extends React.Component {
     if (ghosts) {
       Object.keys(ghosts).forEach((key) => {
         const ghost = ghosts[key]
-        const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
-        newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
-        dynamicElementsById[ghost.id] = newGhost
-        this.attachTextToSprite(newGhost, ghost.name)
+        this.addGhost(ghost)
       })
     }
 
@@ -149,7 +146,7 @@ class GameCanvas extends React.Component {
           // attach camera to main player
           game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
           // add player name above
-          this.attachTextToSprite(mainPlayer, player.name)
+          this.attachTextToSprite(mainPlayer, player)
         } else { // Other players
           this.addPlayerToMap(player)
         }
@@ -157,6 +154,13 @@ class GameCanvas extends React.Component {
     }
     cursors = game.input.keyboard.createCursorKeys()
     elementsGroup.sort()
+  }
+  addGhost (ghost) {
+    const {game} = this.state
+    const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
+    newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
+    dynamicElementsById[ghost.id] = newGhost
+    this.attachTextToSprite(newGhost, ghost)
   }
   addExplosion (x, y) {
     const {game} = this.state
@@ -177,7 +181,8 @@ class GameCanvas extends React.Component {
     graphics.drawRect(shape.x, shape.y, shape.width, shape.height);
     graphics.endFill();
   }
-  attachTextToSprite (sprite, text) {
+  attachTextToSprite (sprite, element) {
+    const text = element.name
     const {game} = this.state
     var style = {
       font: "15px Arial",
@@ -188,10 +193,11 @@ class GameCanvas extends React.Component {
     }
     let textElement = game.add.text(sprite.x, sprite.y - sprite.height, text, style)
     textElement.anchor.set(0.5)
-    textElements.push({
+    textElements[element.id] = {
       element: textElement,
-      sprite: sprite
-    })
+      sprite: sprite,
+      id: element.id
+    }
 
   }
   addPlayerToMap (player) {
@@ -202,10 +208,21 @@ class GameCanvas extends React.Component {
     this.attachTextToSprite(newPlayer, player.name)
   }
   removeElement (element, explosion) {
-    if (explosion) this.addExplosion(element.x, element.y)
     sprite = dynamicElementsById[element.id]
-    elementsGroup.remove(sprite)
-    sprite.destroy()
+    if (sprite) {
+      if (explosion) this.addExplosion(element.x, element.y)
+      elementsGroup.remove(sprite)
+      sprite.destroy()
+      console.log(textElements[element.id])
+      if (textElements[element.id]) textElements[element.id].element.destroy()
+    }
+  }
+  addElement (element) {
+    switch (element.type) {
+      case 'ghost':
+        this.addGhost(element)
+        break;
+    }
   }
   update () {
     const {game} = this.state
@@ -235,6 +252,10 @@ class GameCanvas extends React.Component {
           // remove element
           case 'rm':
             this.removeElement(data, true)
+            break
+          // add element
+          case 'add':
+            this.addElement(data)
             break
 
         }
@@ -271,7 +292,8 @@ class GameCanvas extends React.Component {
         this.updateMainPlayerObj()
     }
     // update text elements positions
-    textElements.forEach((textElement) => {
+    Object.keys(textElements).forEach((key) => {
+      const textElement = textElements[key]
       textElement.element.x = Math.floor(textElement.sprite.x + textElement.sprite.width / 2)
       textElement.element.y = Math.floor(textElement.sprite.y - 10)
     })
