@@ -141,6 +141,12 @@ class Game {
 		}
 		return free
 	}
+	getMatrixCoordWithPosition (x, y) {
+		const refSize = this.getRefSize()
+		const col = Math.floor(x / refSize)
+		const row = Math.floor(y / refSize)
+		return {col, row}
+	}
 	move (id) {
 		const ghost = this.ghostsById[id]
 		const deplacements = ghost.deplacements
@@ -165,6 +171,35 @@ class Game {
 				delete this.ghostsById[ghost.id]
 				console.log('explosion !!!!')
 				// create new ghost 2 second after
+				const {col, row} = this.getMatrixCoordWithPosition(ghost.x, ghost.y)
+				const coordsAround = {
+					topLeft: [col - 1, row - 1],
+					top: [col, row - 1],
+					topRight: [col + 1, row - 1],
+					left: [col + 1, row],
+					right: [col - 1, row],
+					bottomLeft: [col - 1, row + 1],
+					bottom: [col, row + 1],
+					bottomRight: [col + 1, row + 1]
+				}
+				const blocks = Object.keys(coordsAround).reduce((result, key) => {
+					const matrix = this.layers.block.matrix
+					const col = coordsAround[key][0]
+					const row = coordsAround[key][1]
+					if (
+						row < matrix.length &&
+						row > 0 &&
+						col < matrix[0].length &&
+						col > 0
+					) {
+						result.push(this.layers.block.matrix[row][col])
+					}
+					return result
+				}, [])
+				Streamy.broadcast('gameStream', {
+					type: 'rm',
+					data: blocks
+				})
 				setTimeout(() => {
 					const newGhost = this.addGhost()
 					Streamy.broadcast('gameStream', {

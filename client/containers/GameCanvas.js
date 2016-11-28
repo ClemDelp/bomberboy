@@ -205,7 +205,7 @@ class GameCanvas extends React.Component {
     newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
     dynamicElementsById[player.id] = newPlayer
     // add player name above
-    this.attachTextToSprite(newPlayer, player.name)
+    this.attachTextToSprite(newPlayer, player)
   }
   removeElement (element, explosion) {
     sprite = dynamicElementsById[element.id]
