@@ -213,7 +213,6 @@ class GameCanvas extends React.Component {
       if (explosion) this.addExplosion(element.x, element.y)
       elementsGroup.remove(sprite)
       sprite.destroy()
-      console.log(textElements[element.id])
       if (textElements[element.id]) textElements[element.id].element.destroy()
     }
   }
@@ -251,7 +250,19 @@ class GameCanvas extends React.Component {
             break;
           // remove element
           case 'rm':
-            this.removeElement(data, true)
+            data.forEach((el) => {
+              console.log(el)
+              switch (el.type) {
+                case 'ghost':
+                  console.log('remove ghost')
+                  this.removeElement(el, true)
+                  break;
+                case 'block':
+                  console.log('remove block')
+                  this.removeElement(el, false)
+                  break;
+              }
+            })
             break
           // add element
           case 'add':

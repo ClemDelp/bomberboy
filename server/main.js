@@ -163,14 +163,24 @@ class Game {
 				}, config.ghost.speed)
 			},
 			(ghost) => {
+				// --------------------------
 				// remove ghost
 				Streamy.broadcast('gameStream', {
 					type: 'rm',
-					data: ghost
+					data: [ghost]
 				})
 				delete this.ghostsById[ghost.id]
 				console.log('explosion !!!!')
 				// create new ghost 2 second after
+				setTimeout(() => {
+					const newGhost = this.addGhost()
+					Streamy.broadcast('gameStream', {
+						type: 'add',
+						data: newGhost
+					})
+				}, 2000)
+				// --------------------------
+				// Delete blocks around
 				const {col, row} = this.getMatrixCoordWithPosition(ghost.x, ghost.y)
 				const coordsAround = {
 					topLeft: [col - 1, row - 1],
@@ -182,6 +192,7 @@ class Game {
 					bottom: [col, row + 1],
 					bottomRight: [col + 1, row + 1]
 				}
+				var coords = []
 				const blocks = Object.keys(coordsAround).reduce((result, key) => {
 					const matrix = this.layers.block.matrix
 					const col = coordsAround[key][0]
@@ -192,21 +203,22 @@ class Game {
 						col < matrix[0].length &&
 						col > 0
 					) {
-						result.push(this.layers.block.matrix[row][col])
+						coords.push({col, row})
+						result.push(matrix[row][col])
 					}
 					return result
 				}, [])
+				// stream
 				Streamy.broadcast('gameStream', {
 					type: 'rm',
-					data: blocks
-				})
-				setTimeout(() => {
-					const newGhost = this.addGhost()
-					Streamy.broadcast('gameStream', {
-						type: 'add',
-						data: newGhost
+					data: blocks.map((block) => {
+						return Object.assign({}, {id: block.id}, block.val)
 					})
-				}, 2000)
+				})
+				// Remove blocks
+				coords.forEach((coord) => {
+					this.layers.block.matrix[coord.col][coord.row].val = 0
+				})
 			}
 		)
 	}
