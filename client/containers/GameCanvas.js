@@ -5,6 +5,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {config} from '../../config'
 import {arrayToCsv} from '../utils/arrayToCsv'
+import {apiRequest} from '../utils/api'
 
 //
 // ENV
@@ -45,6 +46,8 @@ var textElements = {}
 var elementsGroup;
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
+var spaceKey;
+var bulletTime = 0;
 
 class GameCanvas extends React.Component {
   constructor (props) {
@@ -56,6 +59,7 @@ class GameCanvas extends React.Component {
     this.renderCanvas = this.renderCanvas.bind(this)
     this.drawRect = this.drawRect.bind(this)
     this.addExplosion = this.addExplosion.bind(this)
+    this.teleportation = this.teleportation.bind(this)
   }
   preload () {
     const {game} = this.state
@@ -153,6 +157,10 @@ class GameCanvas extends React.Component {
       })
     }
     cursors = game.input.keyboard.createCursorKeys()
+    spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    //  Stop the following keys from propagating up to the browser
+    game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+
     elementsGroup.sort()
   }
   addGhost (ghost) {
@@ -251,14 +259,13 @@ class GameCanvas extends React.Component {
           // remove element
           case 'rm':
             data.forEach((el) => {
-              console.log(el)
               switch (el.type) {
                 case 'ghost':
-                  console.log('remove ghost')
+                  // console.log('remove ghost')
                   this.removeElement(el, true)
                   break;
                 case 'block':
-                  console.log('remove block')
+                  // console.log('remove block')
                   this.removeElement(el, false)
                   break;
               }
@@ -302,6 +309,11 @@ class GameCanvas extends React.Component {
         mainPlayer.body.velocity.y = 200;
         this.updateMainPlayerObj()
     }
+
+    if (spaceKey.isDown)
+    {
+      this.teleportation(mainPlayerObj)
+    }
     // update text elements positions
     Object.keys(textElements).forEach((key) => {
       const textElement = textElements[key]
@@ -311,6 +323,27 @@ class GameCanvas extends React.Component {
     // re order Z depth
     elementsGroup.sort('y', Phaser.Group.SORT_ASCENDING);
   }
+  teleportation (element) {
+    const {game} = this.state
+      if (game.time.now > bulletTime) {
+        bulletTime = game.time.now + 250;
+        console.log('teleportation garou !!!')
+        // GET CONTEXT GAME
+        apiRequest('/teleportation', {method: 'POST', body: element}, (response) => {
+          if (response.data) {
+            console.log(response.data)
+            console.log(config.map.squareSize)
+            const refSize = config.map.squareSize
+            mainPlayerObj.x = response.data.x * refSize
+            mainPlayerObj.y = response.data.y * refSize
+            mainPlayer.x = response.data.x * refSize
+            mainPlayer.y = response.data.y * refSize
+          }
+        })
+      }
+
+  }
+
   updateMainPlayerObj () {
     mainPlayerObj.x = mainPlayer.x
     mainPlayerObj.y = mainPlayer.y

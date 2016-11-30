@@ -26,7 +26,7 @@ if(Meteor.isServer) {
 			}
 		});
 		game.initGhosts()
-		// ROUTE
+		// ROUTES
 		app.get('/getContextGame', function (req, res) {
 			const player = game.addPlayer()
 			console.log('send context to new player')
@@ -37,6 +37,21 @@ if(Meteor.isServer) {
 				playerId: player.id
 			}
 			res.json({data: context})
+		})
+
+		app.post('/teleportation', function (req, res) {
+			var body = req.body
+			if (body && body.type) {
+				switch (body.type) {
+					case 'player':
+						const freePosition = game.getFreePosition(body)
+						res.json({data: freePosition})
+						break;
+					default:
+						res.json({error: 'type not supported...'})
+				}
+			}
+
 		})
 	})
 }
@@ -95,7 +110,6 @@ class Game {
 	}
 	addGhost () {
 		const refSize = this.getRefSize()
-		console.log('new ghost')
 		const newGhost = new Ghost()
 		const position = this.getFreePosition(newGhost)
 		newGhost.setPosition({
@@ -103,7 +117,6 @@ class Game {
 			y: position.y * refSize + (refSize - (config.ghost.size[1] * config.ghost.scale[1])) / 2
 		})
 		this.ghostsById[newGhost.id] = newGhost
-		console.log(newGhost.id, ' start moving...')
 		this.move(newGhost.id)
 		return newGhost
 	}
@@ -170,7 +183,6 @@ class Game {
 					data: [ghost]
 				})
 				delete this.ghostsById[ghost.id]
-				console.log('explosion !!!!')
 				// create new ghost 2 second after
 				setTimeout(() => {
 					const newGhost = this.addGhost()
