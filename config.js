@@ -1,9 +1,10 @@
 export const config = {
   map: {
-    rows: 20,
-    cols: 20,
+    rows: 30,
+    cols: 30,
     squareSize: 38,
-    defaultGhostNumber: 10
+    defaultGhostNumber: 10,
+    perlin: false
   },
   block: {
     name: 'block',
@@ -89,10 +90,9 @@ export const layers = {
   },
   blockLayer2: {
     elements: [
-        // Object.assign({}, config.tilemap2, {frame: 1}),
         Object.assign({}, config.tilemap2, {frame: 1}),
         Object.assign({}, config.tilemap2, {frame: 2})
-        // Object.assign({}, config.tilemap2, {frame: 2}),
+        // Object.assign({}, config.tilemap2, {frame: 3})
         // Object.assign({}, config.tilemap2, {frame: 3}),
         // Object.assign({}, config.tilemap2, {frame: 4})
     ]

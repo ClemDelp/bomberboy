@@ -5,8 +5,7 @@ import Layer from './layer'
 import {config, layers} from '../config'
 import {Ghost, Player} from './ghost'
 import {guid, getRandomInt} from './utils'
-import {Perlin} from './perlin'
-console.log('perliiiin -->', Perlin)
+import {generateNoise} from './perlin'
 
 if(Meteor.isServer) {
 	Meteor.startup(() => {
@@ -16,32 +15,7 @@ if(Meteor.isServer) {
 		app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 		  extended: true
 		}))
-		// PERLIN
-		var CONSTANT = 2147483647
-		var DIFF = 0.4999
-		var PERLIN_SIZER = 2
-		    // c = document.getElementById('myCanvas'),
-		    // ctx = c.getContext('2d'),
-		    // imgData = ctx.createImageData(c.width, c.height),
-		var x = []
-		var y
-		var i
-		var p
-		var d
 
-		PRNG = Math.round(Math.random() * CONSTANT);
-		perlin = new Perlin(
-			Math.ceil(20), // width
-		  Math.ceil(20), // height
-		  PRNG, // seed
-		  0.30, // persistence
-		  2, // octaves
-		  15 // zoom
-		);
-
-		map = perlin.build(true);
-		console.log(map)
-		
 		// GAME
 		const game = new Game()
 		Streamy.on('gameStream', (message) => {
@@ -100,18 +74,30 @@ class Game {
     }
 		// SET BLOCK LAYER
 		let blockLayer = new Layer()
-		for(var y = 0; y < blockLayer.cols; y++) {
-      for(var x = 0; x < blockLayer.rows; x++) {
-				var val = 0
-				if(Math.random() * 10 % 2 > 1) {
-					// const tilemap = layers.blockLayer
-					const tilemap = layers.blockLayer2
-					var elIndex = getRandomInt(0, tilemap.elements.length - 1)
-					var val = tilemap.elements[elIndex]
-        }
-        blockLayer.setVal(x, y, val)
-      }
-    }
+		// const tilemap = layers.blockLayer
+		const tilemap = layers.blockLayer2
+		if (config.map.perlin) {
+			// PERLIN
+			var noise = generateNoise(config.map.rows, tilemap.elements.length + 1, false);
+			for(x = 0; x < noise.length; x++) {
+		    for(y = 0; y < noise[x].length; y++) {
+						const val = noise[x][y] - 1
+		        if (val !== 0) blockLayer.setVal(x, y, tilemap.elements[val - 1])
+		    }
+			}
+		} else {
+			for(var y = 0; y < blockLayer.cols; y++) {
+				for(var x = 0; x < blockLayer.rows; x++) {
+					var val = 0
+					if(Math.random() * 10 % 2 > 1) {
+						var elIndex = getRandomInt(0, tilemap.elements.length - 1)
+						var val = tilemap.elements[elIndex]
+					}
+					blockLayer.setVal(x, y, val)
+				}
+			}
+		}
+
 		// DEFINE LAYERS
 		this.layers = {
 			'map': groundLayer,
