@@ -13,7 +13,7 @@ import {apiRequest} from '../utils/api'
 const BUFFER_LIMIT = 100
 let buffer = []
 let newPlayerBuffer = []
-
+const refSize = config.map.squareSize
 //
 // STREAMS
 //
@@ -113,15 +113,15 @@ class GameCanvas extends React.Component {
                     y * refSize + element.val.offset[1],
                     'tilemap2'
                   )
+                  // block.anchor.setTo(0.5, 0.5);
                   dynamicElementsById[element.id] = block
                   const block_width = block.body.width
                   const block_height = block.body.height
-                  block.body.setSize(block_width, block_height / 2, 0, (block_height / 2) / 2) // width, height, offsetX, offsetY
+                  block.body.setSize(block_width, block_height / 3, 0, (block_height / 3)) // width, height, offsetX, offsetY
                   block.frame = element.val.frame
                   block.scale.setTo(element.val.scale[0], element.val.scale[1])
-                  // pouette = game.add.sprite(0, 0, 'tutu')
-                  // pouette.scale.setTo(0.32, 0.35)
                   block.body.immovable = true
+                  block.alpha = 1;
                   break
 
                 case 'ground':
@@ -300,6 +300,22 @@ class GameCanvas extends React.Component {
     // MAIN USER DEPLACEMENTS
     mainPlayer.body.velocity.x = 0;
     mainPlayer.body.velocity.y = 0;
+    blocks.forEach((block) => {
+      if (block) {
+        if (
+          mainPlayer.x < block.x + refSize &&
+          mainPlayer.x >= block.x &&
+          mainPlayer.y > block.y - refSize &&
+          mainPlayer.y <= block.y
+        ) {
+          // block.alpha = 0.5;
+          game.add.tween(block).to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true);
+        } else {
+          // block.alpha = 1
+          game.add.tween(block).to( { alpha: 1 }, 100, Phaser.Easing.Linear.None, true);
+        }
+      }
+    })
     if (cursors.left.isDown)
     {
         mainPlayer.body.velocity.x = -200;
@@ -345,7 +361,6 @@ class GameCanvas extends React.Component {
           if (response.data) {
             console.log(response.data)
             console.log(config.map.squareSize)
-            const refSize = config.map.squareSize
             mainPlayerObj.x = response.data.x * refSize
             mainPlayerObj.y = response.data.y * refSize
             mainPlayer.x = response.data.x * refSize
@@ -378,6 +393,7 @@ class GameCanvas extends React.Component {
     // })
     // game.debug.cameraInfo(game.camera, 32, 32);
     // game.debug.text('Sprite z-depth: ' + mainPlayer.z, 10, 20);
+    game.debug.text('mainPlayer.x: ' + mainPlayer.x, 10, 20);
   }
 
   // first time
