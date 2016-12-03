@@ -60,6 +60,7 @@ class GameCanvas extends React.Component {
     this.drawRect = this.drawRect.bind(this)
     this.addExplosion = this.addExplosion.bind(this)
     this.teleportation = this.teleportation.bind(this)
+    this.addTeleportationAnimation = this.addTeleportationAnimation.bind(this)
   }
   preload () {
     const {game} = this.state
@@ -352,6 +353,13 @@ class GameCanvas extends React.Component {
     // re order Z depth
     elementsGroup.sort('y', Phaser.Group.SORT_ASCENDING);
   }
+  addTeleportationAnimation (x, y) {
+    const {game} = this.state
+    var teleportation = game.add.sprite(x, y, 'tpt');
+    teleportation.anchor.set(0.5)
+    var tpt = teleportation.animations.add('tpt');
+    teleportation.animations.play('tpt', 20, false);
+  }
   teleportation (element) {
     const {game} = this.state
       if (game.time.now > bulletTime) {
@@ -360,22 +368,13 @@ class GameCanvas extends React.Component {
         apiRequest('/teleportation', {method: 'POST', body: element}, (response) => {
           if (response.data) {
             const from = Object.assign({}, mainPlayerObj)
-            var teleportation_ = game.add.sprite(from.x, from.y, 'tpt');
-            teleportation_.anchor.set(0.5)
-            var tpt = teleportation_.animations.add('tpt');
-            teleportation_.animations.play('tpt', 20, false);
-
+            this.addTeleportationAnimation(from.x, from.y)
             mainPlayerObj.x = response.data.x * refSize
             mainPlayerObj.y = response.data.y * refSize
             mainPlayer.x = response.data.x * refSize
             mainPlayer.y = response.data.y * refSize
-
             const to = Object.assign({}, mainPlayerObj)
-            var b = game.add.sprite(to.x, to.y, 'tpt');
-            b.anchor.set(0.5)
-            var tpt = b.animations.add('tpt');
-            b.animations.play('tpt', 20, false);
-
+            this.addTeleportationAnimation(to.x, to.y)
           }
         })
       }
@@ -404,7 +403,7 @@ class GameCanvas extends React.Component {
     // })
     // game.debug.cameraInfo(game.camera, 32, 32);
     // game.debug.text('Sprite z-depth: ' + mainPlayer.z, 10, 20);
-    game.debug.text('mainPlayer.x: ' + mainPlayer.x, 10, 20);
+    // game.debug.text('mainPlayer.x: ' + mainPlayer.x, 10, 20);
   }
 
   // first time
