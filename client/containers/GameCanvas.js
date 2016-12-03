@@ -70,7 +70,8 @@ class GameCanvas extends React.Component {
       console.log(el.img)
     })
     // game.load.image('tiles', 'assets/sprites/tilemap.png');
-    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129)
+    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129) // width of a element, height
+    game.load.spritesheet('tilemap2', 'assets/sprites/tilemap2.png', 116, 185) // width of a element, height
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
   }
 
@@ -90,6 +91,11 @@ class GameCanvas extends React.Component {
     game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM;
     // CREATE GROUPS
     elementsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
+
+    // pouette = game.add.sprite(0, 0, 'tilemap2')
+    // pouette.scale.setTo(0.32, 0.40)
+    // pouette.y = pouette.y - 36
+
     // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
@@ -102,13 +108,19 @@ class GameCanvas extends React.Component {
               switch (element.val.type) {
 
                 case 'block':
-                  var block = elementsGroup.create(x * refSize, y * refSize, 'tilemap')
+                  var block = elementsGroup.create(
+                    x * refSize + element.val.offset[0],
+                    y * refSize + element.val.offset[1],
+                    'tilemap2'
+                  )
                   dynamicElementsById[element.id] = block
                   const block_width = block.body.width
                   const block_height = block.body.height
                   block.body.setSize(block_width, block_height / 2, 0, (block_height / 2) / 2) // width, height, offsetX, offsetY
                   block.frame = element.val.frame
                   block.scale.setTo(element.val.scale[0], element.val.scale[1])
+                  // pouette = game.add.sprite(0, 0, 'tutu')
+                  // pouette.scale.setTo(0.32, 0.35)
                   block.body.immovable = true
                   break
 
@@ -236,7 +248,7 @@ class GameCanvas extends React.Component {
     // SET COLLISIONS
     // game.physics.arcade.collide(elementsGroup, elementsGroup, this.collisionHandler, null, this);
     var blocks = elementsGroup.children.map((child) => {
-      if (child.key === "tilemap") return child
+      if (child.key === "tilemap2") return child
     })
     game.physics.arcade.collide(mainPlayer, blocks, this.collisionHandler, null, this);
     // BUFFERS MANAGERS

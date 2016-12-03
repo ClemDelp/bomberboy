@@ -3,7 +3,7 @@ export const config = {
     rows: 10,
     cols: 10,
     squareSize: 38,
-    defaultGhostNumber: 1
+    defaultGhostNumber: 0
   },
   block: {
     name: 'block',
@@ -12,12 +12,20 @@ export const config = {
     scale: [0.4, 0.4],
     img: 'assets/sprites/block.png'
   },
-  block_2: {
+  tilemap: {
     name: 'block_2',
     type: 'block',
-    size: [713, 129],
+    size: [713, 129], // (713 / 7 elements) * 0.37 = 38
     scale: [0.37, 0.4],
     spriteSheet: 'assets/sprites/tilemap.png'
+  },
+  tilemap2: {
+    name: 'block_3',
+    type: 'block',
+    size: [348, 185],
+    scale: [0.32, 0.40],
+    offset: [0, -36],
+    spriteSheet: 'assets/sprites/tilemap2.png'
   },
   // PLYAER
   player: {
@@ -71,12 +79,22 @@ export const layers = {
   // BLOC
   blockLayer: {
     elements: [
-        Object.assign({}, config.block_2, {frame: 1}),
-        Object.assign({}, config.block_2, {frame: 2}),
-        Object.assign({}, config.block_2, {frame: 3}),
-        Object.assign({}, config.block_2, {frame: 4}),
-        Object.assign({}, config.block_2, {frame: 5}),
-        Object.assign({}, config.block_2, {frame: 6})
+        Object.assign({}, config.tilemap, {frame: 1}),
+        Object.assign({}, config.tilemap, {frame: 2}),
+        Object.assign({}, config.tilemap, {frame: 3}),
+        Object.assign({}, config.tilemap, {frame: 4}),
+        Object.assign({}, config.tilemap, {frame: 5}),
+        Object.assign({}, config.tilemap, {frame: 6})
+    ]
+  },
+  blockLayer2: {
+    elements: [
+        // Object.assign({}, config.tilemap2, {frame: 1}),
+        Object.assign({}, config.tilemap2, {frame: 1}),
+        Object.assign({}, config.tilemap2, {frame: 2})
+        // Object.assign({}, config.tilemap2, {frame: 2}),
+        // Object.assign({}, config.tilemap2, {frame: 3}),
+        // Object.assign({}, config.tilemap2, {frame: 4})
     ]
   }
 }

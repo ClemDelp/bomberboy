@@ -76,8 +76,10 @@ class Game {
       for(var x = 0; x < blockLayer.rows; x++) {
 				var val = 0
 				if(Math.random() * 10 % 2 > 1) {
-					var elIndex = getRandomInt(0, layers.blockLayer.elements.length - 1)
-					var val = layers.blockLayer.elements[elIndex]
+					// const tilemap = layers.blockLayer
+					const tilemap = layers.blockLayer2
+					var elIndex = getRandomInt(0, tilemap.elements.length - 1)
+					var val = tilemap.elements[elIndex]
         }
         blockLayer.setVal(x, y, val)
       }
