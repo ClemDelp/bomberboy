@@ -195,6 +195,7 @@ class GameCanvas extends React.Component {
     //  30 is the frame rate (30fps)
     //  true means it will loop when it finishes
     explosion.animations.play('boom', 10, false);
+    game.camera.shake(0.05, 100);
   }
   drawRect (graphics, shape, lineStyle, fill) {
     // draw a rectangle

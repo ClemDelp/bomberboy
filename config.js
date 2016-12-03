@@ -1,7 +1,7 @@
 export const config = {
   map: {
-    rows: 30,
-    cols: 30,
+    rows: 20,
+    cols: 20,
     squareSize: 38,
     defaultGhostNumber: 10,
     perlin: false
