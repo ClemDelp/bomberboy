@@ -3,7 +3,7 @@ export const config = {
     rows: 20,
     cols: 20,
     squareSize: 38,
-    defaultGhostNumber: 0
+    defaultGhostNumber: 10
   },
   block: {
     name: 'block',

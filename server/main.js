@@ -5,6 +5,8 @@ import Layer from './layer'
 import {config, layers} from '../config'
 import {Ghost, Player} from './ghost'
 import {guid, getRandomInt} from './utils'
+import {Perlin} from './perlin'
+console.log('perliiiin -->', Perlin)
 
 if(Meteor.isServer) {
 	Meteor.startup(() => {
@@ -14,6 +16,32 @@ if(Meteor.isServer) {
 		app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 		  extended: true
 		}))
+		// PERLIN
+		var CONSTANT = 2147483647
+		var DIFF = 0.4999
+		var PERLIN_SIZER = 2
+		    // c = document.getElementById('myCanvas'),
+		    // ctx = c.getContext('2d'),
+		    // imgData = ctx.createImageData(c.width, c.height),
+		var x = []
+		var y
+		var i
+		var p
+		var d
+
+		PRNG = Math.round(Math.random() * CONSTANT);
+		perlin = new Perlin(
+			Math.ceil(20), // width
+		  Math.ceil(20), // height
+		  PRNG, // seed
+		  0.30, // persistence
+		  2, // octaves
+		  15 // zoom
+		);
+
+		map = perlin.build(true);
+		console.log(map)
+		
 		// GAME
 		const game = new Game()
 		Streamy.on('gameStream', (message) => {
