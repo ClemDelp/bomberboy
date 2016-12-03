@@ -73,6 +73,7 @@ class GameCanvas extends React.Component {
     game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129) // width of a element, height
     game.load.spritesheet('tilemap2', 'assets/sprites/tilemap2.png', 116, 185) // width of a element, height
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
+    game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
   }
 
   create () {
@@ -355,16 +356,26 @@ class GameCanvas extends React.Component {
     const {game} = this.state
       if (game.time.now > bulletTime) {
         bulletTime = game.time.now + 250;
-        console.log('teleportation garou !!!')
         // GET CONTEXT GAME
         apiRequest('/teleportation', {method: 'POST', body: element}, (response) => {
           if (response.data) {
-            console.log(response.data)
-            console.log(config.map.squareSize)
+            const from = Object.assign({}, mainPlayerObj)
+            var teleportation_ = game.add.sprite(from.x, from.y, 'tpt');
+            teleportation_.anchor.set(0.5)
+            var tpt = teleportation_.animations.add('tpt');
+            teleportation_.animations.play('tpt', 20, false);
+
             mainPlayerObj.x = response.data.x * refSize
             mainPlayerObj.y = response.data.y * refSize
             mainPlayer.x = response.data.x * refSize
             mainPlayer.y = response.data.y * refSize
+
+            const to = Object.assign({}, mainPlayerObj)
+            var b = game.add.sprite(to.x, to.y, 'tpt');
+            b.anchor.set(0.5)
+            var tpt = b.animations.add('tpt');
+            b.animations.play('tpt', 20, false);
+
           }
         })
       }
