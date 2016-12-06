@@ -76,6 +76,7 @@ class GameCanvas extends React.Component {
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
     game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
     game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)
+    game.load.spritesheet('ghost', 'assets/sprites/ghosts.png', 48, 48) // 19 img per row
   }
 
   create () {
@@ -164,7 +165,7 @@ class GameCanvas extends React.Component {
           // mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
 
           mainPlayer = elementsGroup.create(player.x, player.y, 'dude')
-          mainPlayer.scale.setTo(1.5, 1.5)
+          mainPlayer.scale.setTo(1.25, 1.25)
           mainPlayer.animations.add('top', [0, 1, 2], 10, true);
           mainPlayer.animations.add('right', [3, 4, 5], 10, true);
           mainPlayer.animations.add('bottom', [6, 7, 8], 10, true);
@@ -190,8 +191,17 @@ class GameCanvas extends React.Component {
   }
   addGhost (ghost) {
     const {game} = this.state
-    const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
-    newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
+    // const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
+    // newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
+
+    const newGhost = game.add.sprite(ghost.x, ghost.y, 'ghost')
+    newGhost.animations.add('right', [0, 20], 10, true);
+    newGhost.animations.add('down', [40, 60], 10, true);
+    newGhost.animations.add('left', [80, 100], 10, true);
+    newGhost.animations.add('up', [120, 140], 10, true);
+
+    newGhost.scale.setTo(0.75, 0.75);
+
     dynamicElementsById[ghost.id] = newGhost
     this.attachTextToSprite(newGhost, ghost)
   }
@@ -238,7 +248,7 @@ class GameCanvas extends React.Component {
     // var newPlayer = elementsGroup.create(player.x, player.y, config.player.name);
     // newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
     var newPlayer = elementsGroup.create(player.x, player.y, 'dude')
-    newPlayer.scale.setTo(1.5, 1.5)
+    newPlayer.scale.setTo(1.25, 1.25)
     newPlayer.animations.add('top', [0, 1, 2], 10, true);
     newPlayer.animations.add('right', [3, 4, 5], 10, true);
     newPlayer.animations.add('bottom', [6, 7, 8], 10, true);
@@ -284,8 +294,10 @@ class GameCanvas extends React.Component {
               data.id != mainPlayerObj.id &&
               dynamicElementsById[data.id]
             ) {
-              dynamicElementsById[data.id].x = data.x
-              dynamicElementsById[data.id].y = data.y
+              var sprite = dynamicElementsById[data.id]
+              sprite.animations.play(data.orientation)
+              sprite.x = data.x
+              sprite.y = data.y
             }
             break;
           // remove element
