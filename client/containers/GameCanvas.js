@@ -75,6 +75,7 @@ class GameCanvas extends React.Component {
     game.load.spritesheet('tilemap2', 'assets/sprites/tilemap2.png', 116, 185) // width of a element, height
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
     game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
+    game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)
   }
 
   create () {
@@ -157,9 +158,19 @@ class GameCanvas extends React.Component {
         const player = players[key]
         if (player.id === playerId) { // If it's the main player
           mainPlayerObj = player
-          mainPlayer = elementsGroup.create(player.x, player.y, config.player.name)
+
+          // mainPlayer = elementsGroup.create(player.x, player.y, config.player.name)
           // mainPlayer = game.add.sprite(player.x, player.y, config.player.name)
-          mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+          // mainPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+
+          mainPlayer = elementsGroup.create(player.x, player.y, 'dude')
+          mainPlayer.scale.setTo(1.5, 1.5)
+          mainPlayer.animations.add('top', [0, 1, 2], 10, true);
+          mainPlayer.animations.add('right', [3, 4, 5], 10, true);
+          mainPlayer.animations.add('bottom', [6, 7, 8], 10, true);
+          mainPlayer.animations.add('left', [9, 10, 11], 10, true);
+
+
           game.physics.arcade.enable(mainPlayer)
           // attach camera to main player
           game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -224,8 +235,14 @@ class GameCanvas extends React.Component {
 
   }
   addPlayerToMap (player) {
-    var newPlayer = elementsGroup.create(player.x, player.y, config.player.name);
-    newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+    // var newPlayer = elementsGroup.create(player.x, player.y, config.player.name);
+    // newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
+    var newPlayer = elementsGroup.create(player.x, player.y, 'dude')
+    newPlayer.scale.setTo(1.5, 1.5)
+    newPlayer.animations.add('top', [0, 1, 2], 10, true);
+    newPlayer.animations.add('right', [3, 4, 5], 10, true);
+    newPlayer.animations.add('bottom', [6, 7, 8], 10, true);
+    newPlayer.animations.add('left', [9, 10, 11], 10, true);
     dynamicElementsById[player.id] = newPlayer
     // add player name above
     this.attachTextToSprite(newPlayer, player)
@@ -319,27 +336,38 @@ class GameCanvas extends React.Component {
         }
       }
     })
+
     if (cursors.left.isDown)
     {
+        mainPlayer.animations.play('left')
         mainPlayer.body.velocity.x = -200;
         this.updateMainPlayerObj()
     }
     else if (cursors.right.isDown)
     {
+        mainPlayer.animations.play('right')
         mainPlayer.body.velocity.x = 200;
         this.updateMainPlayerObj()
     }
 
+
     if (cursors.up.isDown)
     {
+        mainPlayer.animations.play('top')
         mainPlayer.body.velocity.y = -200;
         this.updateMainPlayerObj()
     }
     else if (cursors.down.isDown)
     {
+        mainPlayer.animations.play('bottom')
         mainPlayer.body.velocity.y = 200;
         this.updateMainPlayerObj()
     }
+
+    if (
+      mainPlayer.body.velocity.x === 0 &&
+      mainPlayer.body.velocity.y === 0
+    ) mainPlayer.animations.stop()
 
     if (spaceKey.isDown)
     {
