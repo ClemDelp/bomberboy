@@ -96,7 +96,7 @@ class GameCanvas extends React.Component {
     // CREATE GROUPS
     elementsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
 
-    // pouette = game.add.sprite(0, 0, 'tilemap2')
+
     // pouette.scale.setTo(0.32, 0.40)
     // pouette.y = pouette.y - 36
 
@@ -129,6 +129,11 @@ class GameCanvas extends React.Component {
                   break
 
                 case 'ground':
+                  // var s = game.add.sprite(x * refSize, y * refSize, 'tilemap')
+                  // s.frame = 1
+                  // s.scale.setTo(0.37, 0.4)
+                  // s.z = -2
+
                   var lineStyle = element.val.lineStyle
                   var fill = element.val.fill
                   var shape = {

@@ -5,7 +5,7 @@ import Layer from './layer'
 import {config, layers} from '../config'
 import {Ghost, Player} from './ghost'
 import {guid, getRandomInt} from './utils'
-import {generateNoise} from './perlin'
+import heightmap from 'heightmap-generator'
 
 if(Meteor.isServer) {
 	Meteor.startup(() => {
@@ -78,11 +78,20 @@ class Game {
 		const tilemap = layers.blockLayer2
 		if (config.map.perlin) {
 			// PERLIN
-			var noise = generateNoise(config.map.rows, tilemap.elements.length + 1, false);
+			let size = config.map.rows / 10
+			if (size < 1) size = 1
+			let levels =  tilemap.elements.length + 1
+			let revert = false
+			var noise = heightmap(size, levels, revert, 1)
+			// for(x = 0; x < noise.length; x++) {
+			// 	console.log(noise[x])
+			// }
 			for(x = 0; x < noise.length; x++) {
 		    for(y = 0; y < noise[x].length; y++) {
 						const val = noise[x][y] - 1
-		        if (val !== 0) blockLayer.setVal(x, y, tilemap.elements[val - 1])
+		        if (val !== 0) {
+							blockLayer.setVal(x, y, tilemap.elements[val - 1])
+						}
 		    }
 			}
 		} else {

@@ -1,10 +1,10 @@
 export const config = {
   map: {
-    rows: 20,
-    cols: 20,
+    rows: 10, // min 10 for heightmap
+    cols: 10, // min 10 for heightmap
     squareSize: 38,
-    defaultGhostNumber: 10,
-    perlin: false
+    defaultGhostNumber: 0,
+    perlin: true
   },
   block: {
     name: 'block',
