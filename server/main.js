@@ -75,7 +75,9 @@ class Game {
 		// SET BLOCK LAYER
 		let blockLayer = new Layer()
 		// const tilemap = layers.blockLayer
-		const tilemap = layers.blockLayer2
+		// const tilemap = layers.blockLayer2
+		// const tilemap = layers.blockLayer3
+		const tilemap = layers.blockLayer4
 		if (config.map.perlin) {
 			// PERLIN
 			let size = config.map.rows / 10
@@ -89,9 +91,10 @@ class Game {
 			for(x = 0; x < noise.length; x++) {
 		    for(y = 0; y < noise[x].length; y++) {
 						const val = noise[x][y] - 1
-		        if (val !== 0) {
-							blockLayer.setVal(x, y, tilemap.elements[val - 1])
-						}
+						console.log(val)
+		        // if (val !== 0) {
+						if (tilemap.elements[val]) blockLayer.setVal(x, y, tilemap.elements[val])
+						// }
 		    }
 			}
 		} else {

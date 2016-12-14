@@ -1,7 +1,10 @@
 export const config = {
+  game: {
+    blockTransparency: false
+  },
   map: {
-    rows: 10, // min 10 for heightmap
-    cols: 10, // min 10 for heightmap
+    rows: 50, // min 10 for heightmap
+    cols: 50, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true
@@ -28,6 +31,17 @@ export const config = {
     offset: [0, -36],
     spriteSheet: 'assets/sprites/tilemap2.png'
   },
+  tilemap3: {
+    name: 'block_4',
+    type: 'block',
+    size: [534, 530],
+    scale: [
+      0.35, // x = 38 * 5 el / 534 = 0.35
+      0.28 // x = 38 * 4 el / 530 = 0.28
+    ],
+    offset: [0, -36],
+    spriteSheet: 'assets/sprites/tilemap3.png'
+  },
   // PLYAER
   player: {
     name: 'player',
@@ -48,6 +62,64 @@ export const config = {
     velocity: 5, // px per move
     speed: 100,
     triesBeforeExplosion: 2
+  }
+}
+
+const layerElements = {
+  water_1: {
+    fill: ["0x0000FF", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  water_2: {
+    fill: ["0x4A86E8", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  water_3: {
+    fill: ["0xC9DAF8", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  water_3: {
+    fill: ["0xCFE2F3", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  sand_1: {
+    fill: ["0xFCE5CD", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  sand_2: {
+    fill: ["0xF9CB9C", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  sand_3: {
+    fill: ["0xF6B26B", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  grass_1: {
+    fill: ["0x6AA84F", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  grass_2: {
+    fill: ["0x38761D", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  ground_1: {
+    fill: ["0xB45F06", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
+  },
+  ground_2: {
+    fill: ["0x783F04", 1],
+    lineStyle: [0, '0x0000FF', 0],
+    type: 'color'
   }
 }
 
@@ -95,6 +167,34 @@ export const layers = {
         // Object.assign({}, config.tilemap2, {frame: 3})
         // Object.assign({}, config.tilemap2, {frame: 3}),
         // Object.assign({}, config.tilemap2, {frame: 4})
+    ]
+  },
+  blockLayer3: {
+    elements: [
+        Object.assign({}, config.tilemap3, {frame: 1}),
+        Object.assign({}, config.tilemap3, {frame: 2}),
+        Object.assign({}, config.tilemap3, {frame: 3}),
+        Object.assign({}, config.tilemap3, {frame: 4}),
+        Object.assign({}, config.tilemap3, {frame: 5}),
+        Object.assign({}, config.tilemap3, {frame: 6}),
+        Object.assign({}, config.tilemap3, {frame: 7}),
+        Object.assign({}, config.tilemap3, {frame: 8}),
+        Object.assign({}, config.tilemap3, {frame: 9}),
+        Object.assign({}, config.tilemap3, {frame: 10})
+    ]
+  },
+  blockLayer4: {
+    elements: [
+      layerElements.water_1,
+      layerElements.water_2,
+      layerElements.water_3,
+      layerElements.sand_1,
+      layerElements.sand_2,
+      layerElements.sand_3,
+      // layerElements.grass_1,
+      layerElements.grass_2,
+      layerElements.ground_1,
+      layerElements.ground_2
     ]
   }
 }

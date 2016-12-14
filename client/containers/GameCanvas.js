@@ -71,8 +71,9 @@ class GameCanvas extends React.Component {
       console.log(el.img)
     })
     // game.load.image('tiles', 'assets/sprites/tilemap.png');
-    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129) // width of a element, height
-    game.load.spritesheet('tilemap2', 'assets/sprites/tilemap2.png', 116, 185) // width of a element, height
+    // game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129) // width of a element, height
+    // game.load.spritesheet('tilemap2', 'assets/sprites/tilemap2.png', 116, 185) // width of a element, height
+    game.load.spritesheet('tilemap2', 'assets/sprites/tilemap3.png', 116, 185) // width of a element, height
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
     game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
     game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)
@@ -110,6 +111,17 @@ class GameCanvas extends React.Component {
             const refSize = layer.refSize
             if (element.val && element.val.type) {
               switch (element.val.type) {
+                case 'color':
+                  var lineStyle = element.val.lineStyle
+                  var fill = element.val.fill
+                  var shape = {
+                    x: x * refSize,
+                    y: y * refSize,
+                    width: refSize,
+                    height: refSize
+                  }
+                  this.drawRect(graphics, shape, lineStyle, fill)
+                  break
 
                 case 'block':
                   var block = elementsGroup.create(
@@ -128,23 +140,21 @@ class GameCanvas extends React.Component {
                   block.alpha = 1;
                   break
 
-                case 'ground':
-                  // var s = game.add.sprite(x * refSize, y * refSize, 'tilemap')
-                  // s.frame = 1
-                  // s.scale.setTo(0.37, 0.4)
-                  // s.z = -2
-
-                  var lineStyle = element.val.lineStyle
-                  var fill = element.val.fill
-                  var shape = {
-                    x: x * refSize,
-                    y: y * refSize,
-                    width: refSize,
-                    height: refSize
-                  }
-                  this.drawRect(graphics, shape, lineStyle, fill)
-                default:
-
+                // case 'ground':
+                //   // var s = game.add.sprite(x * refSize, y * refSize, 'tilemap')
+                //   // s.frame = 1
+                //   // s.scale.setTo(0.37, 0.4)
+                //   // s.z = -2
+                //   var lineStyle = element.val.lineStyle
+                //   var fill = element.val.fill
+                //   var shape = {
+                //     x: x * refSize,
+                //     y: y * refSize,
+                //     width: refSize,
+                //     height: refSize
+                //   }
+                //   this.drawRect(graphics, shape, lineStyle, fill)
+                //   break
               }
             }
           }
@@ -334,26 +344,28 @@ class GameCanvas extends React.Component {
       const newPlayer = newPlayerBuffer.shift()
       this.addPlayerToMap(newPlayer)
     }
+    // --------------------------------
+    // BLOCK TRANSPARENCY
+    if (config.game.blockTransparency) {
+      blocks.forEach((block) => {
+        if (block) {
+          if (
+            mainPlayer.x < block.x + refSize &&
+            mainPlayer.x >= block.x &&
+            mainPlayer.y > block.y - refSize &&
+            mainPlayer.y <= block.y
+          ) {
+            game.add.tween(block).to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true);
+          } else {
+            game.add.tween(block).to( { alpha: 1 }, 100, Phaser.Easing.Linear.None, true);
+          }
+        }
+      })
+    }
+    // --------------------------------
     // MAIN USER DEPLACEMENTS
     mainPlayer.body.velocity.x = 0;
     mainPlayer.body.velocity.y = 0;
-    blocks.forEach((block) => {
-      if (block) {
-        if (
-          mainPlayer.x < block.x + refSize &&
-          mainPlayer.x >= block.x &&
-          mainPlayer.y > block.y - refSize &&
-          mainPlayer.y <= block.y
-        ) {
-          // block.alpha = 0.5;
-          game.add.tween(block).to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true);
-        } else {
-          // block.alpha = 1
-          game.add.tween(block).to( { alpha: 1 }, 100, Phaser.Easing.Linear.None, true);
-        }
-      }
-    })
-
     if (cursors.left.isDown)
     {
         mainPlayer.animations.play('left')
@@ -444,6 +456,7 @@ class GameCanvas extends React.Component {
 
   renderCanvas () {
     const {game} = this.state
+    game.debug.text(game.time.fps || '--', 2, 14, "#00ff00");
     // elementsGroup.hash.forEach((block) => {
     //     game.debug.body(block)
     // })
