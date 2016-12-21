@@ -63,21 +63,9 @@ class Game {
 		this.ghostsById = {}
 		this.playersById = {}
 		this.layers = {}
-		// SET GROUND LAYER
-		let groundLayer = new Layer()
-		for(var y = 0; y < groundLayer.cols; y++) {
-      for(var x = 0; x < groundLayer.rows; x++) {
-        var elIndex = getRandomInt(0, layers.groundLayer.elements.length - 1)
-				var el = layers.groundLayer.elements[elIndex]
-        groundLayer.setVal(x, y, el)
-      }
-    }
 		// SET BLOCK LAYER
 		let blockLayer = new Layer()
-		// const tilemap = layers.blockLayer
-		// const tilemap = layers.blockLayer2
-		const tilemap = layers.blockLayer3
-		// const tilemap = layers.blockLayer4
+		const tilemap = layers.blockLayer
 		if (config.map.perlin) {
 			// PERLIN
 			let size = config.map.rows / 10
@@ -85,9 +73,6 @@ class Game {
 			let levels =  tilemap.elements.length
 			let revert = true
 			var noise = heightmap(size, levels, revert, 1)
-			// for(x = 0; x < noise.length; x++) {
-			// 	console.log(noise[x])
-			// }
 			for(x = 0; x < noise.length; x++) {
 		    for(y = 0; y < noise[x].length; y++) {
 					const val = noise[x][y] - 1
@@ -109,7 +94,6 @@ class Game {
 
 		// DEFINE LAYERS
 		this.layers = {
-			'map': groundLayer,
 			'block': blockLayer
 		}
   }

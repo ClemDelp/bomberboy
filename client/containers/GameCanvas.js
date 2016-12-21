@@ -70,11 +70,7 @@ class GameCanvas extends React.Component {
       if (el.name && el.img) game.load.image(el.name, el.img);
       console.log(el.img)
     })
-    // game.load.image('tiles', 'assets/sprites/tilemap.png');
-    // game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129) // width of a element, height
-    // game.load.spritesheet('tilemap2', 'assets/sprites/tilemap2.png', 116, 185) // width of a element, height
-    // game.load.spritesheet('tilemap2', 'assets/sprites/tilemap3.png', 116, 185) // width of a element, height
-    game.load.spritesheet('tilemap2', 'assets/sprites/tilemap3.png', 100.6, 127.5) // width of a element, height
+    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 100.6, 127.5) // width of a element, height
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
     game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
     game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)
@@ -124,38 +120,26 @@ class GameCanvas extends React.Component {
                   this.drawRect(graphics, shape, lineStyle, fill)
                   break
 
-                case 'block':
-                  var block = elementsGroup.create(
-                    x * refSize + element.val.offset[0],
-                    y * refSize + element.val.offset[1],
-                    'tilemap2'
-                  )
-                  // block.anchor.setTo(0.5, 0.5);
-                  dynamicElementsById[element.id] = block
-                  const block_width = block.body.width
-                  const block_height = block.body.height
-                  block.body.setSize(block_width, block_height / 3, 0, (block_height / 3)) // width, height, offsetX, offsetY
-                  block.frame = element.val.frame
-                  block.scale.setTo(element.val.scale[0], element.val.scale[1])
-                  block.body.immovable = true
-                  block.alpha = 1;
+                case 'water':
+                  var block = this.addBlockToMap(element, refSize, x, y)
                   break
 
-                // case 'ground':
-                //   // var s = game.add.sprite(x * refSize, y * refSize, 'tilemap')
-                //   // s.frame = 1
-                //   // s.scale.setTo(0.37, 0.4)
-                //   // s.z = -2
-                //   var lineStyle = element.val.lineStyle
-                //   var fill = element.val.fill
-                //   var shape = {
-                //     x: x * refSize,
-                //     y: y * refSize,
-                //     width: refSize,
-                //     height: refSize
-                //   }
-                //   this.drawRect(graphics, shape, lineStyle, fill)
-                //   break
+                case 'sand':
+                  var block = this.addBlockToMap(element, refSize, x, y)
+                  break
+
+                case 'grass':
+                  var block = this.addBlockToMap(element, refSize, x, y)
+                  break
+
+                case 'ground':
+                  var block = this.addBlockToMap(element, refSize, x, y)
+                  break
+
+                case 'mountain':
+                  var block = this.addBlockToMap(element, refSize, x, y)
+                  dynamicElementsById[element.id] = block
+                  break
               }
             }
           }
@@ -204,6 +188,23 @@ class GameCanvas extends React.Component {
     game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
 
     elementsGroup.sort()
+  }
+  addBlockToMap (element, refSize, x, y) {
+    var block = elementsGroup.create(
+      x * refSize + element.val.offset[0],
+      y * refSize + element.val.offset[1],
+      'tilemap'
+    )
+    block.elementType = element.val.type
+    // block.anchor.setTo(0.5, 0.5);
+    const block_width = block.body.width
+    const block_height = block.body.height
+    block.body.setSize(block_width, block_height / 3, 0, (block_height / 3)) // width, height, offsetX, offsetY
+    block.frame = element.val.frame
+    block.scale.setTo(element.val.scale[0], element.val.scale[1])
+    block.body.immovable = true
+    block.alpha = 1
+    return block
   }
   addGhost (ghost) {
     const {game} = this.state
@@ -264,6 +265,7 @@ class GameCanvas extends React.Component {
     // var newPlayer = elementsGroup.create(player.x, player.y, config.player.name);
     // newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
     var newPlayer = elementsGroup.create(player.x, player.y, 'dude')
+    newPlayer.elementType = player.type
     newPlayer.scale.setTo(1.25, 1.25)
     newPlayer.animations.add('top', [0, 1, 2], 10, true);
     newPlayer.animations.add('right', [3, 4, 5], 10, true);
@@ -293,8 +295,19 @@ class GameCanvas extends React.Component {
     const {game} = this.state
     // SET COLLISIONS
     // game.physics.arcade.collide(elementsGroup, elementsGroup, this.collisionHandler, null, this);
+    // var blocks = elementsGroup.children.map((child) => {
+    //   if (child.key === "tilemap2") return child
+    // })
     var blocks = elementsGroup.children.map((child) => {
-      if (child.key === "tilemap2") return child
+      switch (child.elementType) {
+        case 'mountain':
+          return child
+          break
+
+        case 'water':
+          return child
+          break
+      }
     })
     game.physics.arcade.collide(mainPlayer, blocks, this.collisionHandler, null, this);
     // BUFFERS MANAGERS
@@ -409,8 +422,9 @@ class GameCanvas extends React.Component {
       textElement.element.x = Math.floor(textElement.sprite.x + textElement.sprite.width / 2)
       textElement.element.y = Math.floor(textElement.sprite.y - 10)
     })
+    // ---------------------
     // re order Z depth
-    elementsGroup.sort('y', Phaser.Group.SORT_ASCENDING);
+    // elementsGroup.sort('y', Phaser.Group.SORT_ASCENDING);
   }
   addTeleportationAnimation (x, y) {
     const {game} = this.state
@@ -457,7 +471,7 @@ class GameCanvas extends React.Component {
 
   renderCanvas () {
     const {game} = this.state
-    game.debug.text(game.time.fps || '--', 2, 14, "#00ff00");
+    // game.debug.text(game.time.fps || '--', 2, 14, "#00ff00");
     // elementsGroup.hash.forEach((block) => {
     //     game.debug.body(block)
     // })
