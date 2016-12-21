@@ -34,12 +34,12 @@ export const config = {
   tilemap3: {
     name: 'block_4',
     type: 'block',
-    size: [534, 530],
+    size: [503, 510],
     scale: [
-      0.35, // x = 38 * 5 el / 534 = 0.35
-      0.28 // x = 38 * 4 el / 530 = 0.28
+      0.37, // x = 38 * 5 el / 503 = 0.37
+      0.47 // x = 38 * 4 el / 510 = 0.29
     ],
-    offset: [0, -36],
+    offset: [0, 0],
     spriteSheet: 'assets/sprites/tilemap3.png'
   },
   // PLYAER
@@ -48,7 +48,7 @@ export const config = {
     size: [27, 40],
     scale: [0.8, 0.8],
     img: 'assets/sprites/phaser-dude.png',
-    canHover: [0],
+    canHover: [0, 1, 2, 3, 4, 5],
     orientation: 'down'
   },
   // GHOST
@@ -171,16 +171,24 @@ export const layers = {
   },
   blockLayer3: {
     elements: [
-        Object.assign({}, config.tilemap3, {frame: 1}),
-        Object.assign({}, config.tilemap3, {frame: 2}),
-        Object.assign({}, config.tilemap3, {frame: 3}),
-        Object.assign({}, config.tilemap3, {frame: 4}),
+        Object.assign({}, config.tilemap3, {frame: 4, offset: [0, 10]}), // water 1
+        Object.assign({}, config.tilemap3, {frame: 9, offset: [0, 10]}), // water 2
+        Object.assign({}, config.tilemap3, {frame: 14, offset: [0, 10]}), // water 3
+
+        Object.assign({}, config.tilemap3, {frame: 3}), // sand 1
+        Object.assign({}, config.tilemap3, {frame: 8}), // sand 2
+
+        Object.assign({}, config.tilemap3, {frame: 0}), // grass
         Object.assign({}, config.tilemap3, {frame: 5}),
-        Object.assign({}, config.tilemap3, {frame: 6}),
-        Object.assign({}, config.tilemap3, {frame: 7}),
-        Object.assign({}, config.tilemap3, {frame: 8}),
-        Object.assign({}, config.tilemap3, {frame: 9}),
-        Object.assign({}, config.tilemap3, {frame: 10})
+        Object.assign({}, config.tilemap3, {frame: 10}),
+        Object.assign({}, config.tilemap3, {frame: 15}),
+
+        Object.assign({}, config.tilemap3, {frame: 7, offset: [0, -5]}), // ground 1
+        Object.assign({}, config.tilemap3, {frame: 2, offset: [0, -5]}), // ground 2
+
+        Object.assign({}, config.tilemap3, {frame: 1, offset: [0, -15]}), // mountain
+        Object.assign({}, config.tilemap3, {frame: 6, offset: [0, -20]}),
+        Object.assign({}, config.tilemap3, {frame: 11, offset: [0, -25]})
     ]
   },
   blockLayer4: {

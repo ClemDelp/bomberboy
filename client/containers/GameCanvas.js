@@ -73,7 +73,8 @@ class GameCanvas extends React.Component {
     // game.load.image('tiles', 'assets/sprites/tilemap.png');
     // game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 101, 129) // width of a element, height
     // game.load.spritesheet('tilemap2', 'assets/sprites/tilemap2.png', 116, 185) // width of a element, height
-    game.load.spritesheet('tilemap2', 'assets/sprites/tilemap3.png', 116, 185) // width of a element, height
+    // game.load.spritesheet('tilemap2', 'assets/sprites/tilemap3.png', 116, 185) // width of a element, height
+    game.load.spritesheet('tilemap2', 'assets/sprites/tilemap3.png', 100.6, 127.5) // width of a element, height
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
     game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
     game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)

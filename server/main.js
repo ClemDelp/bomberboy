@@ -76,25 +76,22 @@ class Game {
 		let blockLayer = new Layer()
 		// const tilemap = layers.blockLayer
 		// const tilemap = layers.blockLayer2
-		// const tilemap = layers.blockLayer3
-		const tilemap = layers.blockLayer4
+		const tilemap = layers.blockLayer3
+		// const tilemap = layers.blockLayer4
 		if (config.map.perlin) {
 			// PERLIN
 			let size = config.map.rows / 10
 			if (size < 1) size = 1
-			let levels =  tilemap.elements.length + 1
-			let revert = false
+			let levels =  tilemap.elements.length
+			let revert = true
 			var noise = heightmap(size, levels, revert, 1)
 			// for(x = 0; x < noise.length; x++) {
 			// 	console.log(noise[x])
 			// }
 			for(x = 0; x < noise.length; x++) {
 		    for(y = 0; y < noise[x].length; y++) {
-						const val = noise[x][y] - 1
-						console.log(val)
-		        // if (val !== 0) {
-						if (tilemap.elements[val]) blockLayer.setVal(x, y, tilemap.elements[val])
-						// }
+					const val = noise[x][y] - 1
+					if (tilemap.elements[val]) blockLayer.setVal(x, y, tilemap.elements[val])
 		    }
 			}
 		} else {
@@ -169,6 +166,7 @@ class Game {
 		let stop = false
 		// Check on all layers
 		const layer = this.layers.block
+		return true
 		if (
 				!stop &&
 				layer.matrix[y] &&
