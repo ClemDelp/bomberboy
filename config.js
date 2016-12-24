@@ -19,7 +19,7 @@ export const config = {
   tilemap: {
     name: 'block_4',
     type: 'block',
-    size: [503, 510],
+    size: [503, 510],
     scale: [
       0.37, // x = 38 * 5 el / 503 = 0.37
       0.47 // x = 38 * 4 el / 510 = 0.29
@@ -53,24 +53,24 @@ export const config = {
 export const layers = {
   blockLayer: {
     elements: [
-        Object.assign({}, config.tilemap, {type: 'water', frame: 4, offset: [0, 10]}), // water 1
-        Object.assign({}, config.tilemap, {type: 'water', frame: 9, offset: [0, 10]}), // water 2
-        Object.assign({}, config.tilemap, {type: 'water', frame: 14, offset: [0, 10]}), // water 3
+      Object.assign({}, config.tilemap, {color: '#4A86E8', type: 'water', frame: 4, offset: [0, 10]}), // water 1
+      Object.assign({}, config.tilemap, {color: '#C9DAF8', type: 'water', frame: 9, offset: [0, 10]}), // water 2
+      Object.assign({}, config.tilemap, {color: '#CFE2F3', type: 'water', frame: 14, offset: [0, 10]}), // water 3
 
-        Object.assign({}, config.tilemap, {type: 'sand', frame: 3}), // sand 1
-        Object.assign({}, config.tilemap, {type: 'sand', frame: 8}), // sand 2
+      Object.assign({}, config.tilemap, {color: '#FCE5CD', type: 'sand', frame: 3}), // sand 1
+      Object.assign({}, config.tilemap, {color: '#F9CB9C', type: 'sand', frame: 8}), // sand 2
 
-        Object.assign({}, config.tilemap, {type: 'grass', frame: 0, offset: [0, 0]}), // grass
-        Object.assign({}, config.tilemap, {type: 'grass', frame: 5, offset: [0, -2]}),
-        Object.assign({}, config.tilemap, {type: 'grass', frame: 10, offset: [0, -3]}),
-        Object.assign({}, config.tilemap, {type: 'grass', frame: 15, offset: [0, -4]}),
+      Object.assign({}, config.tilemap, {color: '#B6D7A8', type: 'grass', frame: 0, offset: [0, 0]}), // grass
+      Object.assign({}, config.tilemap, {color: '#93C47D', type: 'grass', frame: 5, offset: [0, -2]}),
+      Object.assign({}, config.tilemap, {color: '#6AA84F', type: 'grass', frame: 10, offset: [0, -3]}),
+      Object.assign({}, config.tilemap, {color: '#38761D', type: 'grass', frame: 15, offset: [0, -4]}),
 
-        Object.assign({}, config.tilemap, {type: 'ground', frame: 7, offset: [0, -5]}), // ground 1
-        Object.assign({}, config.tilemap, {type: 'ground', frame: 2, offset: [0, -5]}), // ground 2
+      Object.assign({}, config.tilemap, {color: '#F6B26B', type: 'ground', frame: 7, offset: [0, -5]}), // ground 1
+      Object.assign({}, config.tilemap, {color: '#E69138', type: 'ground', frame: 2, offset: [0, -5]}), // ground 2
 
-        Object.assign({}, config.tilemap, {type: 'mountain', frame: 1, offset: [0, -15]}), // mountain
-        Object.assign({}, config.tilemap, {type: 'mountain', frame: 6, offset: [0, -20]}),
-        Object.assign({}, config.tilemap, {type: 'mountain', frame: 11, offset: [0, -25]})
+      Object.assign({}, config.tilemap, {color: '#B45F06', type: 'mountain', frame: 1, offset: [0, -15]}), // mountain
+      Object.assign({}, config.tilemap, {color: '#783F04', type: 'mountain', frame: 6, offset: [0, -20]}),
+      Object.assign({}, config.tilemap, {color: '#783F04', type: 'mountain', frame: 11, offset: [0, -25]})
     ]
   }
 }

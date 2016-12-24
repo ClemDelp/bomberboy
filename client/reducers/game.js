@@ -6,8 +6,13 @@ export const MERGE_INTO_GAME_STATE = 'MERGE_INTO_GAME_STATE'
 //
 // INITIAL STATE
 //
+
 const intialState = {
-  layers: []
+  layers: [],
+  miniMap: {
+    width: 500,
+    height: 500
+  }
 }
 
 //
