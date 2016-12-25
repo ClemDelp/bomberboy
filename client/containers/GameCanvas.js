@@ -6,6 +6,7 @@ import {connect} from 'react-redux'
 import {config} from '../../config'
 import {arrayToCsv} from '../utils/arrayToCsv'
 import {apiRequest} from '../utils/api'
+import {mergeIntoGameState} from '../reducers/game'
 
 //
 // ENV
@@ -43,11 +44,12 @@ var mainPlayer // main player
 var group // ghosts group
 var cursors;
 var textElements = {}
-var elementsGroup;
+var elementsGroup
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
-var spaceKey;
-var bulletTime = 0;
+var spaceKey
+var bulletTime = 0
+var prevCoord = [0, 0]
 
 class GameCanvas extends React.Component {
   constructor (props) {
@@ -67,7 +69,7 @@ class GameCanvas extends React.Component {
     game.stage.backgroundColor = '#007236'
     Object.keys(config).forEach((key) => {
       const el = config[key]
-      if (el.name && el.img) game.load.image(el.name, el.img);
+      if (el.name && el.img) game.load.image(el.name, el.img)
       console.log(el.img)
     })
     game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 100.6, 127.5) // width of a element, height
@@ -88,11 +90,11 @@ class GameCanvas extends React.Component {
     const graphics = game.add.graphics(0, 0)
     //  Modify the world and camera bounds
     game.world.setBounds(-50, -50, 2000, 2000)
-    game.physics.startSystem(Phaser.Physics.ARCADE);
-    game.stage.backgroundColor = '#2d2d2d';
-    game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM;
+    game.physics.startSystem(Phaser.Physics.ARCADE)
+    game.stage.backgroundColor = '#2d2d2d'
+    game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM
     // CREATE GROUPS
-    elementsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE);
+    elementsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE)
 
 
     // pouette.scale.setTo(0.32, 0.40)
@@ -288,8 +290,19 @@ class GameCanvas extends React.Component {
     switch (element.type) {
       case 'ghost':
         this.addGhost(element)
-        break;
+        break
     }
+  }
+  getCoord (x, y) {
+    return {x: Math.round(x / refSize), y: Math.round(y / refSize)}
+  }
+  isNewCoord (coord) {
+    const {x, y} = coord
+    if (prevCoord[0] !== x || prevCoord[1] !== y) {
+      prevCoord = [x, y]
+      return true
+    }
+    return false
   }
   update () {
     const {game} = this.state
@@ -378,8 +391,8 @@ class GameCanvas extends React.Component {
     }
     // --------------------------------
     // MAIN USER DEPLACEMENTS
-    mainPlayer.body.velocity.x = 0;
-    mainPlayer.body.velocity.y = 0;
+    mainPlayer.body.velocity.x = 0
+    mainPlayer.body.velocity.y = 0
     if (cursors.left.isDown)
     {
         mainPlayer.animations.play('left')
@@ -457,6 +470,9 @@ class GameCanvas extends React.Component {
   updateMainPlayerObj () {
     mainPlayerObj.x = mainPlayer.x
     mainPlayerObj.y = mainPlayer.y
+    //
+    const coord = this.getCoord(mainPlayer.x, mainPlayer.y)
+    if(this.isNewCoord(coord)) this.props.mergeIntoGameState({mainPlayerCoord: coord})
     // for client
     Streamy.broadcast('gameStream', {
       type: 'mvt',
@@ -526,6 +542,6 @@ function mapStateToProps ({
 export default connect(
   mapStateToProps,
   {
-
+    mergeIntoGameState
   }
 )(GameCanvas)

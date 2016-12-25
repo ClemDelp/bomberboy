@@ -9,10 +9,7 @@ export const MERGE_INTO_GAME_STATE = 'MERGE_INTO_GAME_STATE'
 
 const intialState = {
   layers: [],
-  miniMap: {
-    width: 500,
-    height: 500
-  }
+  mainPlayerCoord: {}
 }
 
 //
