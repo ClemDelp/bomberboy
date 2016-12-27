@@ -4,17 +4,31 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import {config} from '../../config'
-import {arrayToCsv} from '../utils/arrayToCsv'
 import {apiRequest} from '../utils/api'
+import {mapLoading} from '../utils/mapLoading'
 import {mergeIntoGameState} from '../reducers/game'
 
 //
 // ENV
 //
+
 const BUFFER_LIMIT = 100
 let buffer = []
 let newPlayerBuffer = []
 const refSize = config.map.squareSize
+var dynamicElementsById = {} // --> all the moving elements
+var mainPlayerObj = {} // --> all the moving elements
+var mainPlayer // main player
+var cursors
+var textElements = {}
+var elementsGroup
+const WIDTH = window.innerWidth
+const HEIGHT = window.innerHeight
+var spaceKey
+var bulletTime = 0
+var prevCoord = {x: 0, y: 0}
+var mainMatrix = []
+
 //
 // STREAMS
 //
@@ -38,18 +52,6 @@ Streamy.on('gameStream', function (response) {
 //
 // COMPONENT
 //
-var dynamicElementsById = {} // --> all the moving elements
-var mainPlayerObj = {} // --> all the moving elements
-var mainPlayer // main player
-var group // ghosts group
-var cursors;
-var textElements = {}
-var elementsGroup
-const WIDTH = window.innerWidth
-const HEIGHT = window.innerHeight
-var spaceKey
-var bulletTime = 0
-var prevCoord = [0, 0]
 
 class GameCanvas extends React.Component {
   constructor (props) {
@@ -72,11 +74,11 @@ class GameCanvas extends React.Component {
       if (el.name && el.img) game.load.image(el.name, el.img)
       console.log(el.img)
     })
-    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 100.6, 127.5) // width of a element, height
+    game.load.spritesheet('tilemap', 'assets/sprites/tilemap.png', 100.6, 127.5) // width of a element, height
     game.load.spritesheet('boom', 'assets/sprites/explosion_3.png', 128, 128)
     game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
-    game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)
-    game.load.spritesheet('ghost', 'assets/sprites/ghosts.png', 48, 48) // 19 img per row
+    game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)
+    game.load.spritesheet('ghost', 'assets/sprites/ghosts.png', 48, 48) // 19 img per row
   }
 
   create () {
@@ -102,6 +104,7 @@ class GameCanvas extends React.Component {
 
     // RENDER MAP LAYERS
     if (layers) {
+      mainMatrix = layers['block'].matrix
       Object.keys(layers).forEach((layerName, index) => {
         const layer = layers[layerName]
         for (var y = 0; y < layer.matrix.length; y++) {
@@ -173,7 +176,6 @@ class GameCanvas extends React.Component {
           mainPlayer.animations.add('bottom', [6, 7, 8], 10, true);
           mainPlayer.animations.add('left', [9, 10, 11], 10, true);
 
-
           game.physics.arcade.enable(mainPlayer)
           // attach camera to main player
           game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -214,35 +216,35 @@ class GameCanvas extends React.Component {
     // newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
 
     const newGhost = game.add.sprite(ghost.x, ghost.y, 'ghost')
-    newGhost.animations.add('right', [0, 20], 10, true);
-    newGhost.animations.add('down', [40, 60], 10, true);
-    newGhost.animations.add('left', [80, 100], 10, true);
-    newGhost.animations.add('up', [120, 140], 10, true);
+    newGhost.animations.add('right', [0, 20], 10, true)
+    newGhost.animations.add('down', [40, 60], 10, true)
+    newGhost.animations.add('left', [80, 100], 10, true)
+    newGhost.animations.add('up', [120, 140], 10, true)
 
-    newGhost.scale.setTo(0.75, 0.75);
+    newGhost.scale.setTo(0.75, 0.75)
 
     dynamicElementsById[ghost.id] = newGhost
     this.attachTextToSprite(newGhost, ghost)
   }
   addExplosion (x, y) {
     const {game} = this.state
-    var explosion = game.add.sprite(x, y, 'boom');
+    var explosion = game.add.sprite(x, y, 'boom')
     explosion.anchor.set(0.5)
     //  Here we add a new animation called 'walk'
     //  Because we didn't give any other parameters it's going to make an animation from all available frames in the 'mummy' sprite sheet
-    var boom = explosion.animations.add('boom');
+    var boom = explosion.animations.add('boom')
     //  And this starts the animation playing by using its key ("walk")
     //  30 is the frame rate (30fps)
     //  true means it will loop when it finishes
-    explosion.animations.play('boom', 10, false);
-    game.camera.shake(0.05, 100);
+    explosion.animations.play('boom', 10, false)
+    game.camera.shake(0.05, 100)
   }
   drawRect (graphics, shape, lineStyle, fill) {
     // draw a rectangle
-    graphics.beginFill(fill[0], fill[1]);
-    graphics.lineStyle(lineStyle[0], lineStyle[1], 0);
-    graphics.drawRect(shape.x, shape.y, shape.width, shape.height);
-    graphics.endFill();
+    graphics.beginFill(fill[0], fill[1])
+    graphics.lineStyle(lineStyle[0], lineStyle[1], 0)
+    graphics.drawRect(shape.x, shape.y, shape.width, shape.height)
+    graphics.endFill()
   }
   attachTextToSprite (sprite, element) {
     const text = element.name
@@ -298,8 +300,8 @@ class GameCanvas extends React.Component {
   }
   isNewCoord (coord) {
     const {x, y} = coord
-    if (prevCoord[0] !== x || prevCoord[1] !== y) {
-      prevCoord = [x, y]
+    if (prevCoord.x !== x || prevCoord.y !== y) {
+      prevCoord = {x, y}
       return true
     }
     return false
@@ -416,7 +418,7 @@ class GameCanvas extends React.Component {
     else if (cursors.down.isDown)
     {
         mainPlayer.animations.play('bottom')
-        mainPlayer.body.velocity.y = 200;
+        mainPlayer.body.velocity.y = 200
         this.updateMainPlayerObj()
     }
 
@@ -464,15 +466,27 @@ class GameCanvas extends React.Component {
           }
         })
       }
-
   }
-
+  getDelta (currentCoord, prevCoord) {
+    return {
+      x: currentCoord.x - prevCoord.x,
+      y: currentCoord.y - prevCoord.y
+    }
+  }
   updateMainPlayerObj () {
     mainPlayerObj.x = mainPlayer.x
     mainPlayerObj.y = mainPlayer.y
     //
     const coord = this.getCoord(mainPlayer.x, mainPlayer.y)
-    if(this.isNewCoord(coord)) this.props.mergeIntoGameState({mainPlayerCoord: coord})
+    const delta = this.getDelta(coord, prevCoord)
+    if (this.isNewCoord(coord)) {
+      console.log(delta)
+      this.props.mergeIntoGameState({mainPlayerCoord: coord})
+      const m = {x: 2, y: 2}
+      const o = {x: 0, y: 0}
+      const coordsToLoad = mapLoading(delta, o, m)
+      console.log('coordsToLoad --> ', coordsToLoad)
+    }
     // for client
     Streamy.broadcast('gameStream', {
       type: 'mvt',
