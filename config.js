@@ -3,11 +3,12 @@ export const config = {
     blockTransparency: false
   },
   map: {
-    rows: 50, // min 10 for heightmap
-    cols: 50, // min 10 for heightmap
+    rows: 20, // min 10 for heightmap
+    cols: 20, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
-    perlin: true
+    perlin: true,
+    isometric: true
   },
   block: {
     name: 'block',
@@ -26,6 +27,18 @@ export const config = {
     ],
     offset: [0, 0],
     spriteSheet: 'assets/sprites/tilemap.png'
+  },
+  // Isometric
+  isoTileMap: {
+    name: 'isoTileMap',
+    type: 'iso',
+    size: [1024, 896],
+    scale: [
+      0.37, // x = 38 * 8 el / 1024 = 0.37
+      0.47 // x = 38 * 7 el / 896 = 0.29
+    ],
+    offset: [0, 0],
+    spriteSheet: 'assets/sprites/basic_ground_tiles.png'
   },
   // PLYAER
   player: {
@@ -71,6 +84,14 @@ export const layers = {
       Object.assign({}, config.tilemap, {color: '#B45F06', type: 'mountain', frame: 1, offset: [0, -15]}), // mountain
       Object.assign({}, config.tilemap, {color: '#783F04', type: 'mountain', frame: 6, offset: [0, -20]}),
       Object.assign({}, config.tilemap, {color: '#783F04', type: 'mountain', frame: 11, offset: [0, -25]})
+    ]
+  },
+  isoLayers: {
+    elements: [
+      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grassIso', frame: 0, offset: [0, 0]}), // grass 1
+      Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grassIso', frame: 1, offset: [0, 4]}), // grass 2
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'groundIso', frame: 2, offset: [0, 8]}), // ground
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'groundIso', frame: 3, offset: [0, 12]}), // ground
     ]
   }
 }

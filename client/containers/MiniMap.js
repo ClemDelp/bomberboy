@@ -40,7 +40,7 @@ class MiniMap extends React.Component {
     const {context} = this.state
     const {mainPlayerCoord, pixelSize} = nexProps
     const {x, y} = mainPlayerCoord
-    console.log(x, y, pixelSize)
+    // console.log(x, y, pixelSize)
     context.fillStyle = '#ff0505'
     context.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize)
   }
