@@ -12,12 +12,13 @@ import {mergeIntoGameState} from '../reducers/game'
 // ENV
 //
 
+let mapMatrix = []
 const BUFFER_LIMIT = 100
 let buffer = []
 let newPlayerBuffer = []
 const refSize = config.map.squareSize
 var dynamicElementsById = {} // --> all the moving elements
-var mainPlayerObj = {} // --> all the moving elements
+var mainPlayerObj = {}
 var mainPlayer // main player
 var cursors
 var cursor3D
@@ -29,7 +30,6 @@ const HEIGHT = window.innerHeight
 var spaceKey
 var bulletTime = 0
 var prevCoord = {x: 0, y: 0}
-var mainMatrix = []
 
 //
 // STREAMS
@@ -128,9 +128,10 @@ class GameCanvas extends React.Component {
     }
     // RENDER MAP LAYERS
     if (layers) {
-      mainMatrix = layers['block'].matrix
       Object.keys(layers).forEach((layerName, index) => {
         const layer = layers[layerName]
+        const matrixSize = layer.matrix.length
+        mapMatrix = Array(matrixSize).fill(Array(matrixSize))
         for (var y = 0; y < layer.matrix.length; y++) {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
@@ -170,14 +171,18 @@ class GameCanvas extends React.Component {
         const player = players[key]
         if (player.id === playerId) { // If it's the main player
           mainPlayerObj = player
-          if (config.map.isometric) mainPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup);
-          else mainPlayer = elementsGroup.create(player.x, player.y, 'dude')
+          mainPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup);
+          console.log(
+            'isoZ --->',
+            mainPlayer.isoX,
+            mainPlayer.isoY,
+            mainPlayer.isoZ
+          )
           mainPlayer.scale.setTo(1.25, 1.25)
           mainPlayer.animations.add('top', [0, 1, 2], 10, true);
           mainPlayer.animations.add('right', [3, 4, 5], 10, true);
           mainPlayer.animations.add('bottom', [6, 7, 8], 10, true);
           mainPlayer.animations.add('left', [9, 10, 11], 10, true);
-
           game.physics.arcade.enable(mainPlayer)
           // attach camera to main player
           game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -198,44 +203,41 @@ class GameCanvas extends React.Component {
   }
   addBlockToMap (element, refSize, x, y) {
     const {game} = this.state
-    var block = {}
-    switch (config.map.isometric) {
-      case false:
-        block = elementsGroup.create(
-          x * refSize + element.val.offset[0],
-          y * refSize + element.val.offset[1],
-          'tilemap'
-        )
-        block.elementType = element.val.type
-        // block.anchor.setTo(0.5, 0.5);
-        const block_width = block.body.width
-        const block_height = block.body.height
-        block.body.setSize(block_width, block_height / 3, 0, (block_height / 3)) // width, height, offsetX, offsetY
-        block.body.immovable = true
-        block.scale.setTo(element.val.scale[0], element.val.scale[1])
-        break
-
-      case true:
-        block = game.add.isoSprite(
-          x * refSize,
-          y * refSize,
-          0,
-          'tile',
-          0,
-          elementsGroup
-        );
-        block.anchor.set(0.5, 0);
-        block.smoothed = false;
-        block.body.moves = false;
-        block.scale.setTo(element.val.scale[0], element.val.scale[1])
-        if (element.val.type === 'grass') block.isoZ += 5
-        if (element.val.type === 'ground') block.isoZ += 10
-        if (element.val.type === 'ground2') block.isoZ -= 5
-        break
-    }
-    block.frame = element.val.frame
-    block.alpha = 1
-    return block
+    // switch (config.map.isometric) {
+    //   case false:
+    //     block = elementsGroup.create(
+    //       x * refSize + element.val.offset[0],
+    //       y * refSize + element.val.offset[1],
+    //       'tilemap'
+    //     )
+    //     block.elementType = element.val.type
+    //     // block.anchor.setTo(0.5, 0.5);
+    //     const block_width = block.body.width
+    //     const block_height = block.body.height
+    //     block.body.setSize(block_width, block_height / 3, 0, (block_height / 3)) // width, height, offsetX, offsetY
+    //     block.body.immovable = true
+    //     block.scale.setTo(element.val.scale[0], element.val.scale[1])
+    //     break
+    //
+    //   case true:
+    let tile = game.add.isoSprite(
+      x * refSize,
+      y * refSize,
+      0,
+      'tile',
+      0,
+      elementsGroup
+    );
+    tile.anchor.set(0.5, 0);
+    tile.smoothed = false;
+    tile.body.moves = false;
+    tile.scale.setTo(element.val.scale[0], element.val.scale[1])
+    tile.isoZ += element.val.z
+    tile.frame = element.val.frame
+    tile.alpha = 1
+    // add block to main mapMatrix
+    mapMatrix[x][y] = tile
+    return tile
   }
   addGhost (ghost) {
     const {game} = this.state
@@ -333,6 +335,20 @@ class GameCanvas extends React.Component {
   }
   update () {
     const {game} = this.state
+    // ---------------------------------
+    // UNDERSTAND USER MOVING
+    const coord = this.getCoord(mainPlayer.isoX, mainPlayer.isoY)
+    const delta = this.getDelta(coord, prevCoord)
+    if (this.isNewCoord(coord)) {
+      console.log('actual position -> ', coord)
+      if (mapMatrix[coord.x] && mapMatrix[coord.x][coord.y]) mapMatrix[coord.x][coord.y].isoZ += 10
+      this.props.mergeIntoGameState({mainPlayerCoord: coord})
+      const m = {x: 2, y: 2}
+      const o = {x: 0, y: 0}
+      // const coordsToLoad = mapLoading(delta, o, m)
+      // console.log('coordsToLoad --> ', coordsToLoad)
+    }
+    // ---------------------------------
     // SET COLLISIONS
     var blocks = elementsGroup.children.map((child) => {
       switch (child.elementType) {
@@ -419,7 +435,7 @@ class GameCanvas extends React.Component {
     if (cursors.left.isDown)
     {
         mainPlayer.animations.play('left')
-        if (config.map.isometric) {
+        if (config.map.isometric && false) {
           mainPlayer.body.velocity.x = -100;
           mainPlayer.body.velocity.y = 100;
         } else {
@@ -430,21 +446,19 @@ class GameCanvas extends React.Component {
     else if (cursors.right.isDown)
     {
         mainPlayer.animations.play('right')
-        if (config.map.isometric) {
+        if (config.map.isometric && false) {
             mainPlayer.body.velocity.x = 100;
             mainPlayer.body.velocity.y = -100;
         } else {
           mainPlayer.body.velocity.x = 200;
         }
-        if (config.map.isometric)
         this.updateMainPlayerObj()
     }
-
 
     if (cursors.up.isDown)
     {
         mainPlayer.animations.play('top')
-        if (config.map.isometric) {
+        if (config.map.isometric && false) {
           mainPlayer.body.velocity.x = -200;
           mainPlayer.body.velocity.y = -200;
         } else {
@@ -455,7 +469,7 @@ class GameCanvas extends React.Component {
     else if (cursors.down.isDown)
     {
         mainPlayer.animations.play('bottom')
-        if (config.map.isometric) {
+        if (config.map.isometric && false) {
           mainPlayer.body.velocity.x = 200
           mainPlayer.body.velocity.y = 200
         } else {
@@ -517,17 +531,6 @@ class GameCanvas extends React.Component {
   updateMainPlayerObj () {
     mainPlayerObj.x = mainPlayer.x
     mainPlayerObj.y = mainPlayer.y
-    //
-    const coord = this.getCoord(mainPlayer.x, mainPlayer.y)
-    const delta = this.getDelta(coord, prevCoord)
-    if (this.isNewCoord(coord)) {
-      // console.log(delta)
-      this.props.mergeIntoGameState({mainPlayerCoord: coord})
-      const m = {x: 2, y: 2}
-      const o = {x: 0, y: 0}
-      const coordsToLoad = mapLoading(delta, o, m)
-      // console.log('coordsToLoad --> ', coordsToLoad)
-    }
     // for client
     Streamy.broadcast('gameStream', {
       type: 'mvt',

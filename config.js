@@ -88,10 +88,10 @@ export const layers = {
   },
   isoLayers: {
     elements: [
-      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grass', frame: 0, offset: [0, 0]}), // grass 1
-      Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grass2', frame: 1, offset: [0, 4]}), // grass 2
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground', frame: 2, offset: [0, 8]}), // ground
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground2', frame: 3, offset: [0, 12]}), // ground
+      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grass', frame: 0, z: 5}), // grass 1
+      Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grass2', frame: 1, z: 0}), // grass 2
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground', frame: 2, z: 10}), // ground
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground2', frame: 3, z: -5}), // ground
     ]
   }
 }
