@@ -34,8 +34,8 @@ export const config = {
     type: 'iso',
     size: [1024, 896],
     scale: [
-      0.5, // x = 38 * 8 el / 1024 = 0.37
-      0.6 // x = 38 * 7 el / 896 = 0.29
+      0.55, // x = (38 * 8 el / 1024) + 0.25
+      0.55 // x = (38 * 7 el / 896) + 0.25
     ],
     offset: [0, 0],
     spriteSheet: 'assets/sprites/basic_ground_tiles.png'

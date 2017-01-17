@@ -20,6 +20,7 @@ var dynamicElementsById = {} // --> all the moving elements
 var mainPlayerObj = {} // --> all the moving elements
 var mainPlayer // main player
 var cursors
+var cursor3D
 var textElements = {}
 var elementsGroup
 var isoGroup
@@ -125,18 +126,6 @@ class GameCanvas extends React.Component {
     } else {
       elementsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE)
     }
-
-
-    // -----------------------------
-    // TILE ISOMETRIC
-    // Create a group for our tiles.
-    // isoGroup = game.add.group();
-
-    // Let's make a load of tiles on a grid.
-    // this.spawnTiles();
-    // -----------------------------
-
-
     // RENDER MAP LAYERS
     if (layers) {
       mainMatrix = layers['block'].matrix
@@ -203,11 +192,9 @@ class GameCanvas extends React.Component {
     spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     //  Stop the following keys from propagating up to the browser
     game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
-
-    // elementsGroup.sort()
-
+    elementsGroup.sort()
     // Provide a 3D position for the cursor
-    cursorPos = new Phaser.Plugin.Isometric.Point3();
+    cursor3D = new Phaser.Plugin.Isometric.Point3();
   }
   addBlockToMap (element, refSize, x, y) {
     const {game} = this.state
@@ -306,8 +293,6 @@ class GameCanvas extends React.Component {
 
   }
   addPlayerToMap (player) {
-    // var newPlayer = elementsGroup.create(player.x, player.y, config.player.name);
-    // newPlayer.scale.setTo(config.player.scale[0], config.player.scale[1]);
     var newPlayer = elementsGroup.create(player.x, player.y, 'dude')
     newPlayer.elementType = player.type
     newPlayer.scale.setTo(1.25, 1.25)
@@ -348,37 +333,7 @@ class GameCanvas extends React.Component {
   }
   update () {
     const {game} = this.state
-
-    // Update the cursor position.
-    // It's important to understand that screen-to-isometric projection means you have to specify a z position manually, as this cannot be easily
-    // determined from the 2D pointer position without extra trickery. By default, the z position is 0 if not set.
-    game.iso.unproject(game.input.activePointer.position, cursorPos);
-
-    // Loop through all tiles and test to see if the 3D position from above intersects with the automatically generated IsoSprite tile bounds.
-    elementsGroup.forEach(function (tile) {
-        if (tile.isoBounds) {
-          var inBounds = tile.isoBounds.containsXY(cursorPos.x, cursorPos.y);
-          // If it does, do a little animation and tint change.
-          if (!tile.selected && inBounds) {
-              tile.selected = true;
-              tile.tint = 0x86bfda;
-              game.add.tween(tile).to({ isoZ: 14 }, 200, Phaser.Easing.Quadratic.InOut, true);
-          }
-          // If not, revert back to how it was.
-          else if (tile.selected && !inBounds) {
-              tile.selected = false;
-              tile.tint = 0xffffff;
-              game.add.tween(tile).to({ isoZ: 0 }, 200, Phaser.Easing.Quadratic.InOut, true);
-          }
-        }
-    });
-
-
     // SET COLLISIONS
-    // game.physics.arcade.collide(elementsGroup, elementsGroup, this.collisionHandler, null, this);
-    // var blocks = elementsGroup.children.map((child) => {
-    //   if (child.key === "tilemap2") return child
-    // })
     var blocks = elementsGroup.children.map((child) => {
       switch (child.elementType) {
         case 'mountain':
