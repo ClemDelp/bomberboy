@@ -87,8 +87,22 @@ class GameCanvas extends React.Component {
     game.time.advancedTiming = true;
     game.debug.renderShadow = false;
     game.stage.disableVisibilityChange = true;
+
     game.plugins.add(new Phaser.Plugin.Isometric(game));
-    game.iso.anchor.setTo(0.5, 0.1);
+
+    //  Modify the world and camera bounds
+    game.world.setBounds(-50, -50, 2000, 2000)
+
+    if (config.map.isometric) {
+      game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE)
+      game.iso.anchor.setTo(0.5, 0.2);
+    } else {
+      game.physics.startSystem(Phaser.Physics.ARCADE)
+    }
+
+    game.stage.backgroundColor = '#2d2d2d'
+    game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM
+
     game.load.spritesheet('tile', 'assets/sprites/basic_ground_tiles.png', 128, 128) // width of a element, height
     // --------------------------------------
   }
@@ -102,14 +116,6 @@ class GameCanvas extends React.Component {
       playerId
     } = this.props
     const graphics = game.add.graphics(0, 0)
-    //  Modify the world and camera bounds
-    game.world.setBounds(-50, -50, 2000, 2000)
-
-    if (config.map.isometric) game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE)
-    else game.physics.startSystem(Phaser.Physics.ARCADE)
-
-    game.stage.backgroundColor = '#2d2d2d'
-    game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM
     // CREATE GROUPS
     if (config.map.isometric) {
       elementsGroup = game.add.group();
@@ -198,7 +204,10 @@ class GameCanvas extends React.Component {
     //  Stop the following keys from propagating up to the browser
     game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
 
-    elementsGroup.sort()
+    // elementsGroup.sort()
+
+    // Provide a 3D position for the cursor
+    cursorPos = new Phaser.Plugin.Isometric.Point3();
   }
   addBlockToMap (element, refSize, x, y) {
     const {game} = this.state
@@ -229,7 +238,12 @@ class GameCanvas extends React.Component {
           elementsGroup
         );
         block.anchor.set(0.5, 0);
-        // block.isoZ += element.val.offset[1]
+        block.smoothed = false;
+        block.body.moves = false;
+        block.scale.setTo(element.val.scale[0], element.val.scale[1])
+        if (element.val.type === 'grass') block.isoZ += 5
+        if (element.val.type === 'ground') block.isoZ += 10
+        if (element.val.type === 'ground2') block.isoZ -= 5
         break
     }
     block.frame = element.val.frame
@@ -334,6 +348,32 @@ class GameCanvas extends React.Component {
   }
   update () {
     const {game} = this.state
+
+    // Update the cursor position.
+    // It's important to understand that screen-to-isometric projection means you have to specify a z position manually, as this cannot be easily
+    // determined from the 2D pointer position without extra trickery. By default, the z position is 0 if not set.
+    game.iso.unproject(game.input.activePointer.position, cursorPos);
+
+    // Loop through all tiles and test to see if the 3D position from above intersects with the automatically generated IsoSprite tile bounds.
+    elementsGroup.forEach(function (tile) {
+        if (tile.isoBounds) {
+          var inBounds = tile.isoBounds.containsXY(cursorPos.x, cursorPos.y);
+          // If it does, do a little animation and tint change.
+          if (!tile.selected && inBounds) {
+              tile.selected = true;
+              tile.tint = 0x86bfda;
+              game.add.tween(tile).to({ isoZ: 14 }, 200, Phaser.Easing.Quadratic.InOut, true);
+          }
+          // If not, revert back to how it was.
+          else if (tile.selected && !inBounds) {
+              tile.selected = false;
+              tile.tint = 0xffffff;
+              game.add.tween(tile).to({ isoZ: 0 }, 200, Phaser.Easing.Quadratic.InOut, true);
+          }
+        }
+    });
+
+
     // SET COLLISIONS
     // game.physics.arcade.collide(elementsGroup, elementsGroup, this.collisionHandler, null, this);
     // var blocks = elementsGroup.children.map((child) => {

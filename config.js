@@ -34,8 +34,8 @@ export const config = {
     type: 'iso',
     size: [1024, 896],
     scale: [
-      0.37, // x = 38 * 8 el / 1024 = 0.37
-      0.47 // x = 38 * 7 el / 896 = 0.29
+      0.5, // x = 38 * 8 el / 1024 = 0.37
+      0.6 // x = 38 * 7 el / 896 = 0.29
     ],
     offset: [0, 0],
     spriteSheet: 'assets/sprites/basic_ground_tiles.png'
@@ -88,10 +88,10 @@ export const layers = {
   },
   isoLayers: {
     elements: [
-      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grassIso', frame: 0, offset: [0, 0]}), // grass 1
-      Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grassIso', frame: 1, offset: [0, 4]}), // grass 2
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'groundIso', frame: 2, offset: [0, 8]}), // ground
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'groundIso', frame: 3, offset: [0, 12]}), // ground
+      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grass', frame: 0, offset: [0, 0]}), // grass 1
+      Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grass2', frame: 1, offset: [0, 4]}), // grass 2
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground', frame: 2, offset: [0, 8]}), // ground
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground2', frame: 3, offset: [0, 12]}), // ground
     ]
   }
 }
