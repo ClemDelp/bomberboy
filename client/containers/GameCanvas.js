@@ -12,6 +12,7 @@ import {mergeIntoGameState} from '../reducers/game'
 // ENV
 //
 
+let hashMap = {}
 let mapMatrix = []
 const BUFFER_LIMIT = 100
 let buffer = []
@@ -30,7 +31,7 @@ const HEIGHT = window.innerHeight
 var spaceKey
 var bulletTime = 0
 var prevCoord = {x: 0, y: 0}
-
+var selectedTile = {}
 //
 // STREAMS
 //
@@ -131,7 +132,12 @@ class GameCanvas extends React.Component {
       Object.keys(layers).forEach((layerName, index) => {
         const layer = layers[layerName]
         const matrixSize = layer.matrix.length
-        mapMatrix = Array(matrixSize).fill(Array(matrixSize))
+        for (var row = 0; row < matrixSize; row++) {
+          mapMatrix[row] = []
+          for (var col = 0; col < matrixSize; col++) {
+            mapMatrix[row][col] = 0
+          }
+        }
         for (var y = 0; y < layer.matrix.length; y++) {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
@@ -151,7 +157,7 @@ class GameCanvas extends React.Component {
                   break
 
                 default:
-                  var block = this.addBlockToMap(element, refSize, x, y)
+                  this.addBlockToMap(element, refSize, x, y)
               }
             }
           }
@@ -235,8 +241,9 @@ class GameCanvas extends React.Component {
     tile.isoZ += element.val.z
     tile.frame = element.val.frame
     tile.alpha = 1
+    tile.id = element.id
     // add block to main mapMatrix
-    mapMatrix[x][y] = tile
+    mapMatrix[y][x] = tile
     return tile
   }
   addGhost (ghost) {
@@ -340,8 +347,11 @@ class GameCanvas extends React.Component {
     const coord = this.getCoord(mainPlayer.isoX, mainPlayer.isoY)
     const delta = this.getDelta(coord, prevCoord)
     if (this.isNewCoord(coord)) {
-      console.log('actual position -> ', coord)
-      if (mapMatrix[coord.x] && mapMatrix[coord.x][coord.y]) mapMatrix[coord.x][coord.y].isoZ += 10
+      if (mapMatrix[coord.y] && mapMatrix[coord.y][coord.x]) {
+        selectedTile.isoZ += 4
+        selectedTile = mapMatrix[coord.y][coord.x]
+        selectedTile.isoZ -= 4
+      }
       this.props.mergeIntoGameState({mainPlayerCoord: coord})
       const m = {x: 2, y: 2}
       const o = {x: 0, y: 0}
