@@ -3,8 +3,8 @@ export const config = {
     blockTransparency: false
   },
   map: {
-    rows: 20, // min 10 for heightmap
-    cols: 20, // min 10 for heightmap
+    rows: 10, // min 10 for heightmap
+    cols: 10, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,

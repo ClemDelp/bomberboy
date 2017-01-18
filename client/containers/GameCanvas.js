@@ -95,12 +95,12 @@ class GameCanvas extends React.Component {
     //  Modify the world and camera bounds
     game.world.setBounds(-50, -50, 2000, 2000)
 
-    if (config.map.isometric) {
-      game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE)
-      game.iso.anchor.setTo(0.5, 0.2);
-    } else {
-      game.physics.startSystem(Phaser.Physics.ARCADE)
-    }
+    // Start the IsoArcade physics system.
+    game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE)
+
+    // This is used to set a game canvas-based offset for the 0, 0, 0 isometric coordinate - by default
+    // this point would be at screen coordinates 0, 0 (top left) which is usually undesirable.
+    game.iso.anchor.setTo(0.5, 0.2);
 
     game.stage.backgroundColor = '#2d2d2d'
     game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM
@@ -117,7 +117,8 @@ class GameCanvas extends React.Component {
       players,
       playerId
     } = this.props
-    const graphics = game.add.graphics(0, 0)
+    // Set the global gravity for IsoArcade.
+    game.physics.isoArcade.gravity.setTo(0, 0, -500);
     // CREATE GROUPS
     if (config.map.isometric) {
       elementsGroup = game.add.group();
@@ -143,22 +144,7 @@ class GameCanvas extends React.Component {
             const element = layer.matrix[y][x]
             const refSize = layer.refSize
             if (element.val && element.val.type) {
-              switch (element.val.type) {
-                case 'color':
-                  var lineStyle = element.val.lineStyle
-                  var fill = element.val.fill
-                  var shape = {
-                    x: x * refSize,
-                    y: y * refSize,
-                    width: refSize,
-                    height: refSize
-                  }
-                  this.drawRect(graphics, shape, lineStyle, fill)
-                  break
-
-                default:
-                  this.addBlockToMap(element, refSize, x, y)
-              }
+              this.addBlockToMap(element, refSize, x, y)
             }
           }
         }
@@ -178,34 +164,49 @@ class GameCanvas extends React.Component {
         if (player.id === playerId) { // If it's the main player
           mainPlayerObj = player
           mainPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup);
-          console.log(
-            'isoZ --->',
-            mainPlayer.isoX,
-            mainPlayer.isoY,
-            mainPlayer.isoZ
-          )
           mainPlayer.scale.setTo(1.25, 1.25)
           mainPlayer.animations.add('top', [0, 1, 2], 10, true);
           mainPlayer.animations.add('right', [3, 4, 5], 10, true);
           mainPlayer.animations.add('bottom', [6, 7, 8], 10, true);
           mainPlayer.animations.add('left', [9, 10, 11], 10, true);
-          game.physics.arcade.enable(mainPlayer)
-          // attach camera to main player
+          mainPlayer.isoZ += 200
+          mainPlayer.anchor.set(0.5);
+          game.physics.isoArcade.enable(mainPlayer);
+          mainPlayer.body.collideWorldBounds = true;
+
           game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
           // add player name above
           this.attachTextToSprite(mainPlayer, player)
+
+          // Set up our controls.
+          cursors = game.input.keyboard.createCursorKeys();
+
+          game.input.keyboard.addKeyCapture([
+              Phaser.Keyboard.LEFT,
+              Phaser.Keyboard.RIGHT,
+              Phaser.Keyboard.UP,
+              Phaser.Keyboard.DOWN,
+              Phaser.Keyboard.SPACEBAR
+          ]);
+
+          var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+          space.onDown.add(function () {
+              mainPlayer.body.velocity.z = 300;
+          }, this);
+
         } else { // Other players
           this.addPlayerToMap(player)
         }
       })
     }
-    cursors = game.input.keyboard.createCursorKeys()
-    spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+    // cursors = game.input.keyboard.createCursorKeys()
+    // spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     //  Stop the following keys from propagating up to the browser
-    game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
-    elementsGroup.sort()
+    // game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+    // elementsGroup.sort()
     // Provide a 3D position for the cursor
-    cursor3D = new Phaser.Plugin.Isometric.Point3();
+    // cursor3D = new Phaser.Plugin.Isometric.Point3();
   }
   addBlockToMap (element, refSize, x, y) {
     const {game} = this.state
@@ -226,7 +227,7 @@ class GameCanvas extends React.Component {
     //     break
     //
     //   case true:
-    let tile = game.add.isoSprite(
+    let cube = game.add.isoSprite(
       x * refSize,
       y * refSize,
       0,
@@ -234,17 +235,27 @@ class GameCanvas extends React.Component {
       0,
       elementsGroup
     );
-    tile.anchor.set(0.5, 0);
-    tile.smoothed = false;
-    tile.body.moves = false;
-    tile.scale.setTo(element.val.scale[0], element.val.scale[1])
-    tile.isoZ += element.val.z
-    tile.frame = element.val.frame
-    tile.alpha = 1
-    tile.id = element.id
+    cube.anchor.set(0.5);
+
+    // Enable the physics body on this cube.
+    // game.physics.isoArcade.enable(cube);
+
+    // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
+    cube.body.collideWorldBounds = true;
+
+    // Add a full bounce on the x and y axes, and a bit on the z axis.
+    // cube.body.bounce.set(0, 0, 0.5);
+
+    cube.body.immovable = true;
+
+    cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z/10)
+    cube.isoZ += element.val.z
+    cube.frame = element.val.frame
+    cube.alpha = 1
+    cube.id = element.id
     // add block to main mapMatrix
-    mapMatrix[y][x] = tile
-    return tile
+    mapMatrix[y][x] = cube
+    return cube
   }
   addGhost (ghost) {
     const {game} = this.state
@@ -353,25 +364,25 @@ class GameCanvas extends React.Component {
         selectedTile.isoZ -= 4
       }
       this.props.mergeIntoGameState({mainPlayerCoord: coord})
-      const m = {x: 2, y: 2}
-      const o = {x: 0, y: 0}
+      // const m = {x: 2, y: 2}
+      // const o = {x: 0, y: 0}
       // const coordsToLoad = mapLoading(delta, o, m)
       // console.log('coordsToLoad --> ', coordsToLoad)
     }
     // ---------------------------------
     // SET COLLISIONS
-    var blocks = elementsGroup.children.map((child) => {
-      switch (child.elementType) {
-        case 'mountain':
-          return child
-          break
-
-        case 'water':
-          return child
-          break
-      }
-    })
-    game.physics.arcade.collide(mainPlayer, blocks, this.collisionHandler, null, this);
+    // var blocks = elementsGroup.children.map((child) => {
+    //   switch (child.elementType) {
+    //     case 'mountain':
+    //       return child
+    //       break
+    //
+    //     case 'water':
+    //       return child
+    //       break
+    //   }
+    // })
+    // game.physics.arcade.collide(mainPlayer, blocks, this.collisionHandler, null, this);
     // BUFFERS MANAGERS
     if (buffer.length > 0) {
       // const element =
@@ -439,63 +450,92 @@ class GameCanvas extends React.Component {
       })
     }
     // --------------------------------
+    // Move the player at this speed.
+    var speed = 100
+
+    if (cursors.up.isDown) {
+        mainPlayer.body.velocity.y = -speed;
+    }
+    else if (cursors.down.isDown) {
+        mainPlayer.body.velocity.y = speed;
+    }
+    else {
+        mainPlayer.body.velocity.y = 0;
+    }
+
+    if (cursors.left.isDown) {
+        mainPlayer.body.velocity.x = -speed;
+    }
+    else if (cursors.right.isDown) {
+        mainPlayer.body.velocity.x = speed;
+    }
+    else {
+        mainPlayer.body.velocity.x = 0;
+    }
+
+    // Our collision and sorting code again.
+    game.physics.isoArcade.collide(elementsGroup);
+    // game.iso.topologicalSort(elementsGroup);
+    // --------------------------------
     // MAIN USER DEPLACEMENTS
-    mainPlayer.body.velocity.x = 0
-    mainPlayer.body.velocity.y = 0
-    if (cursors.left.isDown)
-    {
-        mainPlayer.animations.play('left')
-        if (config.map.isometric && false) {
-          mainPlayer.body.velocity.x = -100;
-          mainPlayer.body.velocity.y = 100;
-        } else {
-          mainPlayer.body.velocity.x = -200;
-        }
-        this.updateMainPlayerObj()
-    }
-    else if (cursors.right.isDown)
-    {
-        mainPlayer.animations.play('right')
-        if (config.map.isometric && false) {
-            mainPlayer.body.velocity.x = 100;
-            mainPlayer.body.velocity.y = -100;
-        } else {
-          mainPlayer.body.velocity.x = 200;
-        }
-        this.updateMainPlayerObj()
-    }
+    // mainPlayer.body.velocity.x = 0
+    // mainPlayer.body.velocity.y = 0
+    // if (cursors.left.isDown)
+    // {
+    //     mainPlayer.animations.play('left')
+    //     if (config.map.isometric && false) {
+    //       mainPlayer.body.velocity.x = -100;
+    //       mainPlayer.body.velocity.y = 100;
+    //     } else {
+    //       mainPlayer.body.velocity.x = -200;
+    //     }
+    //     this.updateMainPlayerObj()
+    // }
+    // else if (cursors.right.isDown)
+    // {
+    //     mainPlayer.animations.play('right')
+    //     if (config.map.isometric && false) {
+    //         mainPlayer.body.velocity.x = 100;
+    //         mainPlayer.body.velocity.y = -100;
+    //     } else {
+    //       mainPlayer.body.velocity.x = 200;
+    //     }
+    //     this.updateMainPlayerObj()
+    // }
+    //
+    // if (cursors.up.isDown)
+    // {
+    //     mainPlayer.animations.play('top')
+    //     if (config.map.isometric && false) {
+    //       mainPlayer.body.velocity.x = -200;
+    //       mainPlayer.body.velocity.y = -200;
+    //     } else {
+    //       mainPlayer.body.velocity.y = -200;
+    //     }
+    //     this.updateMainPlayerObj()
+    // }
+    // else if (cursors.down.isDown)
+    // {
+    //     mainPlayer.animations.play('bottom')
+    //     if (config.map.isometric && false) {
+    //       mainPlayer.body.velocity.x = 200
+    //       mainPlayer.body.velocity.y = 200
+    //     } else {
+    //       mainPlayer.body.velocity.y = 200
+    //     }
+    //     this.updateMainPlayerObj()
+    // }
+    //
+    // if (
+    //   mainPlayer.body.velocity.x === 0 &&
+    //   mainPlayer.body.velocity.y === 0
+    // ) mainPlayer.animations.stop()
+    //
+    // if (spaceKey.isDown) {
+    //   this.teleportation(mainPlayerObj)
+    // }
 
-    if (cursors.up.isDown)
-    {
-        mainPlayer.animations.play('top')
-        if (config.map.isometric && false) {
-          mainPlayer.body.velocity.x = -200;
-          mainPlayer.body.velocity.y = -200;
-        } else {
-          mainPlayer.body.velocity.y = -200;
-        }
-        this.updateMainPlayerObj()
-    }
-    else if (cursors.down.isDown)
-    {
-        mainPlayer.animations.play('bottom')
-        if (config.map.isometric && false) {
-          mainPlayer.body.velocity.x = 200
-          mainPlayer.body.velocity.y = 200
-        } else {
-          mainPlayer.body.velocity.y = 200
-        }
-        this.updateMainPlayerObj()
-    }
-
-    if (
-      mainPlayer.body.velocity.x === 0 &&
-      mainPlayer.body.velocity.y === 0
-    ) mainPlayer.animations.stop()
-
-    if (spaceKey.isDown) {
-      this.teleportation(mainPlayerObj)
-    }
+    // ---------------------
     // update text elements positions
     Object.keys(textElements).forEach((key) => {
       const textElement = textElements[key]
@@ -556,15 +596,11 @@ class GameCanvas extends React.Component {
   renderCanvas () {
     const {game} = this.state
     game.debug.text('fps: ' + game.time.fps || '--', 2, 14, "#ffffff");
-    // if (config.map.isometric) {
-    //   elementsGroup.forEach(function (tile) {
-    //       game.debug.body(tile, 'rgba(189, 221, 235, 0.6)', false);
-    //   });
-    // } else {
-    //   elementsGroup.hash.forEach((block) => {
-    //       game.debug.body(block)
-    //   })
-    // }
+
+    // elementsGroup.forEach(function (tile) {
+    //     game.debug.body(tile, 'rgba(189, 221, 235, 0.6)', false);
+    // });
+
     // game.debug.cameraInfo(game.camera, 32, 32);
     // game.debug.text('Sprite z-depth: ' + mainPlayer.z, 10, 20);
     // game.debug.text('mainPlayer.x: ' + mainPlayer.x, 10, 20);
