@@ -451,27 +451,62 @@ class GameCanvas extends React.Component {
     }
     // --------------------------------
     // Move the player at this speed.
-    var speed = 100
+    var speed = 200
+    mainPlayer.body.velocity.x = 0;
+    mainPlayer.body.velocity.y = 0;
 
-    if (cursors.up.isDown) {
-        mainPlayer.body.velocity.y = -speed;
+    if (cursors.up.isDown && cursors.left.isDown) {
+      mainPlayer.animations.play('top')
+      mainPlayer.body.velocity.x = -speed;
+      this.updateMainPlayerObj()
+    }
+    else if (cursors.up.isDown && cursors.right.isDown) {
+      mainPlayer.animations.play('right')
+      mainPlayer.body.velocity.y = -speed;
+      this.updateMainPlayerObj()
+    }
+    else if (cursors.down.isDown && cursors.left.isDown) {
+      mainPlayer.animations.play('left')
+      mainPlayer.body.velocity.y = speed;
+      this.updateMainPlayerObj()
+    }
+    else if (cursors.down.isDown && cursors.right.isDown) {
+      mainPlayer.animations.play('right')
+      mainPlayer.body.velocity.x = speed;
+      this.updateMainPlayerObj()
+    }
+    else if (cursors.up.isDown) {
+      mainPlayer.animations.play('top')
+      mainPlayer.body.velocity.x = -speed;
+      mainPlayer.body.velocity.y = -speed;
+      this.updateMainPlayerObj()
     }
     else if (cursors.down.isDown) {
-        mainPlayer.body.velocity.y = speed;
+      mainPlayer.animations.play('bottom')
+      mainPlayer.body.velocity.x = speed;
+      mainPlayer.body.velocity.y = speed;
+      this.updateMainPlayerObj()
     }
-    else {
-        mainPlayer.body.velocity.y = 0;
-    }
-
-    if (cursors.left.isDown) {
-        mainPlayer.body.velocity.x = -speed;
+    else if (cursors.left.isDown) {
+        mainPlayer.animations.play('left')
+        mainPlayer.body.velocity.x = -speed + 100
+        mainPlayer.body.velocity.y = speed - 100
+        this.updateMainPlayerObj()
     }
     else if (cursors.right.isDown) {
-        mainPlayer.body.velocity.x = speed;
+      mainPlayer.animations.play('right')
+      mainPlayer.body.velocity.x = speed - 100
+      mainPlayer.body.velocity.y = -speed + 100
+      this.updateMainPlayerObj()
     }
-    else {
-        mainPlayer.body.velocity.x = 0;
-    }
+    // else {
+    //     mainPlayer.body.velocity.x = 0;
+    // }
+
+    if (
+      mainPlayer.body.velocity.x === 0 &&
+      mainPlayer.body.velocity.y === 0
+    ) mainPlayer.animations.stop()
 
     // Our collision and sorting code again.
     game.physics.isoArcade.collide(elementsGroup);
