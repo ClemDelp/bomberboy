@@ -3,8 +3,8 @@ export const config = {
     blockTransparency: false
   },
   map: {
-    rows: 10, // min 10 for heightmap
-    cols: 10, // min 10 for heightmap
+    rows: 20, // min 10 for heightmap
+    cols: 20, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,
@@ -88,10 +88,10 @@ export const layers = {
   },
   isoLayers: {
     elements: [
-      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grass', frame: 0, z: 5}), // grass 1
+      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grass', frame: 0, z: 10}), // grass 1
       Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grass2', frame: 1, z: 0}), // grass 2
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground', frame: 2, z: 10}), // ground
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground2', frame: 3, z: -5}), // ground
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground', frame: 2, z: 20}), // ground
+      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground2', frame: 3, z: 0}), // ground
     ]
   }
 }

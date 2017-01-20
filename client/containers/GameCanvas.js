@@ -64,7 +64,6 @@ class GameCanvas extends React.Component {
     this.update = this.update.bind(this)
     this.attachTextToSprite = this.attachTextToSprite.bind(this)
     this.renderCanvas = this.renderCanvas.bind(this)
-    this.drawRect = this.drawRect.bind(this)
     this.addExplosion = this.addExplosion.bind(this)
     this.teleportation = this.teleportation.bind(this)
     this.addTeleportationAnimation = this.addTeleportationAnimation.bind(this)
@@ -118,7 +117,7 @@ class GameCanvas extends React.Component {
       playerId
     } = this.props
     // Set the global gravity for IsoArcade.
-    game.physics.isoArcade.gravity.setTo(0, 0, -500);
+    // game.physics.isoArcade.gravity.setTo(0, 0, -500);
     // CREATE GROUPS
     if (config.map.isometric) {
       elementsGroup = game.add.group();
@@ -172,6 +171,7 @@ class GameCanvas extends React.Component {
           mainPlayer.isoZ += 200
           mainPlayer.anchor.set(0.5);
           game.physics.isoArcade.enable(mainPlayer);
+          mainPlayer.body.gravity.z = -500
           mainPlayer.body.collideWorldBounds = true;
 
           game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
@@ -179,54 +179,29 @@ class GameCanvas extends React.Component {
           this.attachTextToSprite(mainPlayer, player)
 
           // Set up our controls.
-          cursors = game.input.keyboard.createCursorKeys();
-
+          cursors = game.input.keyboard.createCursorKeys()
           game.input.keyboard.addKeyCapture([
               Phaser.Keyboard.LEFT,
               Phaser.Keyboard.RIGHT,
               Phaser.Keyboard.UP,
               Phaser.Keyboard.DOWN,
               Phaser.Keyboard.SPACEBAR
-          ]);
+          ])
 
-          var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+          var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
 
           space.onDown.add(function () {
               mainPlayer.body.velocity.z = 300;
-          }, this);
+          }, this)
 
         } else { // Other players
           this.addPlayerToMap(player)
         }
       })
     }
-    // cursors = game.input.keyboard.createCursorKeys()
-    // spaceKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    //  Stop the following keys from propagating up to the browser
-    // game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
-    // elementsGroup.sort()
-    // Provide a 3D position for the cursor
-    // cursor3D = new Phaser.Plugin.Isometric.Point3();
   }
   addBlockToMap (element, refSize, x, y) {
     const {game} = this.state
-    // switch (config.map.isometric) {
-    //   case false:
-    //     block = elementsGroup.create(
-    //       x * refSize + element.val.offset[0],
-    //       y * refSize + element.val.offset[1],
-    //       'tilemap'
-    //     )
-    //     block.elementType = element.val.type
-    //     // block.anchor.setTo(0.5, 0.5);
-    //     const block_width = block.body.width
-    //     const block_height = block.body.height
-    //     block.body.setSize(block_width, block_height / 3, 0, (block_height / 3)) // width, height, offsetX, offsetY
-    //     block.body.immovable = true
-    //     block.scale.setTo(element.val.scale[0], element.val.scale[1])
-    //     break
-    //
-    //   case true:
     let cube = game.add.isoSprite(
       x * refSize,
       y * refSize,
@@ -234,21 +209,21 @@ class GameCanvas extends React.Component {
       'tile',
       0,
       elementsGroup
-    );
-    cube.anchor.set(0.5);
+    )
+    cube.anchor.set(0.5)
 
     // Enable the physics body on this cube.
-    // game.physics.isoArcade.enable(cube);
+    game.physics.isoArcade.enable(cube)
 
     // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
-    cube.body.collideWorldBounds = true;
+    cube.body.collideWorldBounds = true
 
     // Add a full bounce on the x and y axes, and a bit on the z axis.
     // cube.body.bounce.set(0, 0, 0.5);
 
-    cube.body.immovable = true;
+    cube.body.immovable = true
 
-    cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z/10)
+    cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z / 10)
     cube.isoZ += element.val.z
     cube.frame = element.val.frame
     cube.alpha = 1
@@ -285,13 +260,6 @@ class GameCanvas extends React.Component {
     //  true means it will loop when it finishes
     explosion.animations.play('boom', 10, false)
     game.camera.shake(0.05, 100)
-  }
-  drawRect (graphics, shape, lineStyle, fill) {
-    // draw a rectangle
-    graphics.beginFill(fill[0], fill[1])
-    graphics.lineStyle(lineStyle[0], lineStyle[1], 0)
-    graphics.drawRect(shape.x, shape.y, shape.width, shape.height)
-    graphics.endFill()
   }
   attachTextToSprite (sprite, element) {
     const text = element.name
@@ -358,11 +326,11 @@ class GameCanvas extends React.Component {
     const coord = this.getCoord(mainPlayer.isoX, mainPlayer.isoY)
     const delta = this.getDelta(coord, prevCoord)
     if (this.isNewCoord(coord)) {
-      if (mapMatrix[coord.y] && mapMatrix[coord.y][coord.x]) {
-        selectedTile.isoZ += 4
-        selectedTile = mapMatrix[coord.y][coord.x]
-        selectedTile.isoZ -= 4
-      }
+      // if (mapMatrix[coord.y] && mapMatrix[coord.y][coord.x]) {
+      //   selectedTile.isoZ += 4
+      //   selectedTile = mapMatrix[coord.y][coord.x]
+      //   selectedTile.isoZ -= 4
+      // }
       this.props.mergeIntoGameState({mainPlayerCoord: coord})
       // const m = {x: 2, y: 2}
       // const o = {x: 0, y: 0}
@@ -370,19 +338,6 @@ class GameCanvas extends React.Component {
       // console.log('coordsToLoad --> ', coordsToLoad)
     }
     // ---------------------------------
-    // SET COLLISIONS
-    // var blocks = elementsGroup.children.map((child) => {
-    //   switch (child.elementType) {
-    //     case 'mountain':
-    //       return child
-    //       break
-    //
-    //     case 'water':
-    //       return child
-    //       break
-    //   }
-    // })
-    // game.physics.arcade.collide(mainPlayer, blocks, this.collisionHandler, null, this);
     // BUFFERS MANAGERS
     if (buffer.length > 0) {
       // const element =
@@ -499,9 +454,6 @@ class GameCanvas extends React.Component {
       mainPlayer.body.velocity.y = -speed + 100
       this.updateMainPlayerObj()
     }
-    // else {
-    //     mainPlayer.body.velocity.x = 0;
-    // }
 
     if (
       mainPlayer.body.velocity.x === 0 &&
@@ -509,67 +461,8 @@ class GameCanvas extends React.Component {
     ) mainPlayer.animations.stop()
 
     // Our collision and sorting code again.
-    game.physics.isoArcade.collide(elementsGroup);
-    // game.iso.topologicalSort(elementsGroup);
-    // --------------------------------
-    // MAIN USER DEPLACEMENTS
-    // mainPlayer.body.velocity.x = 0
-    // mainPlayer.body.velocity.y = 0
-    // if (cursors.left.isDown)
-    // {
-    //     mainPlayer.animations.play('left')
-    //     if (config.map.isometric && false) {
-    //       mainPlayer.body.velocity.x = -100;
-    //       mainPlayer.body.velocity.y = 100;
-    //     } else {
-    //       mainPlayer.body.velocity.x = -200;
-    //     }
-    //     this.updateMainPlayerObj()
-    // }
-    // else if (cursors.right.isDown)
-    // {
-    //     mainPlayer.animations.play('right')
-    //     if (config.map.isometric && false) {
-    //         mainPlayer.body.velocity.x = 100;
-    //         mainPlayer.body.velocity.y = -100;
-    //     } else {
-    //       mainPlayer.body.velocity.x = 200;
-    //     }
-    //     this.updateMainPlayerObj()
-    // }
-    //
-    // if (cursors.up.isDown)
-    // {
-    //     mainPlayer.animations.play('top')
-    //     if (config.map.isometric && false) {
-    //       mainPlayer.body.velocity.x = -200;
-    //       mainPlayer.body.velocity.y = -200;
-    //     } else {
-    //       mainPlayer.body.velocity.y = -200;
-    //     }
-    //     this.updateMainPlayerObj()
-    // }
-    // else if (cursors.down.isDown)
-    // {
-    //     mainPlayer.animations.play('bottom')
-    //     if (config.map.isometric && false) {
-    //       mainPlayer.body.velocity.x = 200
-    //       mainPlayer.body.velocity.y = 200
-    //     } else {
-    //       mainPlayer.body.velocity.y = 200
-    //     }
-    //     this.updateMainPlayerObj()
-    // }
-    //
-    // if (
-    //   mainPlayer.body.velocity.x === 0 &&
-    //   mainPlayer.body.velocity.y === 0
-    // ) mainPlayer.animations.stop()
-    //
-    // if (spaceKey.isDown) {
-    //   this.teleportation(mainPlayerObj)
-    // }
-
+    game.physics.isoArcade.collide(elementsGroup)
+    // game.iso.topologicalSort(elementsGroup)
     // ---------------------
     // update text elements positions
     Object.keys(textElements).forEach((key) => {
