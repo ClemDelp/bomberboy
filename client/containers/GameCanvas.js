@@ -119,14 +119,10 @@ class GameCanvas extends React.Component {
     // Set the global gravity for IsoArcade.
     // game.physics.isoArcade.gravity.setTo(0, 0, -500);
     // CREATE GROUPS
-    if (config.map.isometric) {
-      elementsGroup = game.add.group();
-      // we won't really be using IsoArcade physics, but I've enabled it anyway so the debug bodies can be seen
-      elementsGroup.enableBody = true;
-      elementsGroup.physicsBodyType = Phaser.Plugin.Isometric.ISOARCADE;
-    } else {
-      elementsGroup = game.add.physicsGroup(Phaser.Physics.ARCADE)
-    }
+    elementsGroup = game.add.group()
+    // we won't really be using IsoArcade physics, but I've enabled it anyway so the debug bodies can be seen
+    elementsGroup.enableBody = true
+    elementsGroup.physicsBodyType = Phaser.Plugin.Isometric.ISOARCADE
     // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
@@ -160,43 +156,7 @@ class GameCanvas extends React.Component {
     if (players) {
       Object.keys(players).forEach((key) => {
         const player = players[key]
-        if (player.id === playerId) { // If it's the main player
-          mainPlayerObj = player
-          mainPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup);
-          mainPlayer.scale.setTo(1.25, 1.25)
-          mainPlayer.animations.add('top', [0, 1, 2], 10, true);
-          mainPlayer.animations.add('right', [3, 4, 5], 10, true);
-          mainPlayer.animations.add('bottom', [6, 7, 8], 10, true);
-          mainPlayer.animations.add('left', [9, 10, 11], 10, true);
-          mainPlayer.isoZ += 200
-          mainPlayer.anchor.set(0.5);
-          game.physics.isoArcade.enable(mainPlayer);
-          mainPlayer.body.gravity.z = -500
-          mainPlayer.body.collideWorldBounds = true;
-
-          game.camera.follow(mainPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);
-          // add player name above
-          this.attachTextToSprite(mainPlayer, player)
-
-          // Set up our controls.
-          cursors = game.input.keyboard.createCursorKeys()
-          game.input.keyboard.addKeyCapture([
-              Phaser.Keyboard.LEFT,
-              Phaser.Keyboard.RIGHT,
-              Phaser.Keyboard.UP,
-              Phaser.Keyboard.DOWN,
-              Phaser.Keyboard.SPACEBAR
-          ])
-
-          var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
-
-          space.onDown.add(function () {
-              mainPlayer.body.velocity.z = 300;
-          }, this)
-
-        } else { // Other players
-          this.addPlayerToMap(player)
-        }
+        this.addPlayerToMap(game, player, playerId)
       })
     }
   }
@@ -217,6 +177,7 @@ class GameCanvas extends React.Component {
 
     // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
     cube.body.collideWorldBounds = true
+    cube.body.bounce.set(1, 1, 0.2);
 
     // Add a full bounce on the x and y axes, and a bit on the z axis.
     // cube.body.bounce.set(0, 0, 0.5);
@@ -280,17 +241,54 @@ class GameCanvas extends React.Component {
     }
 
   }
-  addPlayerToMap (player) {
-    var newPlayer = elementsGroup.create(player.x, player.y, 'dude')
+  addPlayerToMap (game, player, playerId) {
+    var newPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup)
     newPlayer.elementType = player.type
     newPlayer.scale.setTo(1.25, 1.25)
-    newPlayer.animations.add('top', [0, 1, 2], 10, true);
-    newPlayer.animations.add('right', [3, 4, 5], 10, true);
-    newPlayer.animations.add('bottom', [6, 7, 8], 10, true);
-    newPlayer.animations.add('left', [9, 10, 11], 10, true);
-    dynamicElementsById[player.id] = newPlayer
+    newPlayer.animations.add('top', [0, 1, 2], 10, true)
+    newPlayer.animations.add('right', [3, 4, 5], 10, true)
+    newPlayer.animations.add('bottom', [6, 7, 8], 10, true)
+    newPlayer.animations.add('left', [9, 10, 11], 10, true)
+    newPlayer.isoZ += 200
+    newPlayer.anchor.set(0.5)
+    game.physics.isoArcade.enable(newPlayer)
+    newPlayer.body.gravity.z = -500
+    newPlayer.body.collideWorldBounds = true
+    game.camera.follow(newPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1)
     // add player name above
     this.attachTextToSprite(newPlayer, player)
+    // If it's the main player
+    if (player.id === playerId) {
+      mainPlayer = newPlayer
+      mainPlayerObj = player
+      // Set up our controls.
+      cursors = game.input.keyboard.createCursorKeys()
+      game.input.keyboard.addKeyCapture([
+        Phaser.Keyboard.LEFT,
+        Phaser.Keyboard.RIGHT,
+        Phaser.Keyboard.UP,
+        Phaser.Keyboard.DOWN,
+        Phaser.Keyboard.SPACEBAR
+      ])
+
+      var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+      space.onDown.add(function () {
+          mainPlayer.body.velocity.z = 200
+      }, this)
+    } else {
+      dynamicElementsById[player.id] = newPlayer
+    }
+
+    // var newPlayer = elementsGroup.create(player.x, player.y, 'dude')
+    // newPlayer.elementType = player.type
+    // newPlayer.scale.setTo(1.25, 1.25)
+    // newPlayer.animations.add('top', [0, 1, 2], 10, true);
+    // newPlayer.animations.add('right', [3, 4, 5], 10, true);
+    // newPlayer.animations.add('bottom', [6, 7, 8], 10, true);
+    // newPlayer.animations.add('left', [9, 10, 11], 10, true);
+    // dynamicElementsById[player.id] = newPlayer
+    // add player name above
+    // this.attachTextToSprite(newPlayer, player)
   }
   removeElement (element, explosion) {
     sprite = dynamicElementsById[element.id]
@@ -376,15 +374,13 @@ class GameCanvas extends React.Component {
           case 'add':
             this.addElement(data)
             break
-
         }
-
       })
     }
     if (newPlayerBuffer.length > 0) {
       console.log('new player !!!')
       const newPlayer = newPlayerBuffer.shift()
-      this.addPlayerToMap(newPlayer)
+      this.addPlayerToMap(game, newPlayer, playerId)
     }
     // --------------------------------
     // BLOCK TRANSPARENCY
@@ -407,8 +403,8 @@ class GameCanvas extends React.Component {
     // --------------------------------
     // Move the player at this speed.
     var speed = 200
-    mainPlayer.body.velocity.x = 0;
-    mainPlayer.body.velocity.y = 0;
+    mainPlayer.body.velocity.x = 0
+    mainPlayer.body.velocity.y = 0
 
     if (cursors.up.isDown && cursors.left.isDown) {
       mainPlayer.animations.play('top')
@@ -462,7 +458,9 @@ class GameCanvas extends React.Component {
 
     // Our collision and sorting code again.
     game.physics.isoArcade.collide(elementsGroup)
-    // game.iso.topologicalSort(elementsGroup)
+    // game.iso.simpleSort(elementsGroup)
+    // elementsGroup.forEach((el) => console.log(el))
+    game.iso.topologicalSort(elementsGroup)
     // ---------------------
     // update text elements positions
     Object.keys(textElements).forEach((key) => {
