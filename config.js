@@ -3,8 +3,8 @@ export const config = {
     blockTransparency: false
   },
   map: {
-    rows: 20, // min 10 for heightmap
-    cols: 20, // min 10 for heightmap
+    rows: 10, // min 10 for heightmap
+    cols: 10, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,
@@ -32,13 +32,24 @@ export const config = {
   isoTileMap: {
     name: 'isoTileMap',
     type: 'iso',
-    size: [1024, 896],
+    size: [1024, 896],
     scale: [
       0.55, // x = (38 * 8 el / 1024) + 0.25
       0.55 // x = (38 * 7 el / 896) + 0.25
     ],
     offset: [0, 0],
     spriteSheet: 'assets/sprites/basic_ground_tiles.png'
+  },
+  isoTileMap_2: {
+    name: 'iso_tiles',
+    type: 'iso',
+    size: [824, 103],
+    scale: [
+      0.7, // x = (38 * 8 el / 1024) + 0.25
+      0.7 // x = (38 * 7 el / 896) + 0.25
+    ],
+    offset: [0, 0],
+    spriteSheet: 'assets/sprites/iso_tiles.png'
   },
   // PLYAER
   player: {
@@ -92,6 +103,18 @@ export const layers = {
       Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grass2', frame: 1, z: 0}), // grass 2
       Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground', frame: 2, z: 20}), // ground
       Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground2', frame: 3, z: 0}), // ground
+    ]
+  },
+  isoLayers2: {
+    elements: [
+      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'water', frame: 4, z: 0}),
+      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground3', frame: 7, z: 0}),
+      Object.assign({}, config.isoTileMap_2, {color: '#4A86E8', type: 'grass', frame: 0, z: 0})
+      // Object.assign({}, config.isoTileMap_2, {color: '#C9DAF8', type: 'grass2', frame: 1, z: 0}),
+      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground', frame: 2, z: 20}),
+      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground2', frame: 5, z: 20}),
+      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground3', frame: 6, z: 20}),
+      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'montain', frame: 3, z: 0})
     ]
   }
 }

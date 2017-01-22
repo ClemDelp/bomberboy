@@ -85,12 +85,10 @@ class GameCanvas extends React.Component {
     // --------------------------------------
     // ISOMETRIC
     // --------------------------------------
-    game.time.advancedTiming = true;
-    game.debug.renderShadow = false;
-    game.stage.disableVisibilityChange = true;
-
-    game.plugins.add(new Phaser.Plugin.Isometric(game));
-
+    game.time.advancedTiming = true
+    game.debug.renderShadow = false
+    game.stage.disableVisibilityChange = true
+    game.plugins.add(new Phaser.Plugin.Isometric(game))
     //  Modify the world and camera bounds
     game.world.setBounds(-50, -50, 2000, 2000)
 
@@ -99,12 +97,13 @@ class GameCanvas extends React.Component {
 
     // This is used to set a game canvas-based offset for the 0, 0, 0 isometric coordinate - by default
     // this point would be at screen coordinates 0, 0 (top left) which is usually undesirable.
-    game.iso.anchor.setTo(0.5, 0.2);
+    game.iso.anchor.setTo(0.5, 0.2)
 
     game.stage.backgroundColor = '#2d2d2d'
     game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM
 
-    game.load.spritesheet('tile', 'assets/sprites/basic_ground_tiles.png', 128, 128) // width of a element, height
+    // game.load.spritesheet('tile', 'assets/sprites/basic_ground_tiles.png', 128, 128) // width of a element, height
+    game.load.spritesheet('tile', 'assets/sprites/iso_tiles.png', 103, 103) // width of a element, height
     // --------------------------------------
   }
 
@@ -177,7 +176,7 @@ class GameCanvas extends React.Component {
 
     // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
     cube.body.collideWorldBounds = true
-    cube.body.bounce.set(1, 1, 0.2);
+    cube.body.bounce.set(1, 1, 0.2)
 
     // Add a full bounce on the x and y axes, and a bit on the z axis.
     // cube.body.bounce.set(0, 0, 0.5);
@@ -408,34 +407,34 @@ class GameCanvas extends React.Component {
 
     if (cursors.up.isDown && cursors.left.isDown) {
       mainPlayer.animations.play('top')
-      mainPlayer.body.velocity.x = -speed;
+      mainPlayer.body.velocity.x = -speed
       this.updateMainPlayerObj()
     }
     else if (cursors.up.isDown && cursors.right.isDown) {
       mainPlayer.animations.play('right')
-      mainPlayer.body.velocity.y = -speed;
+      mainPlayer.body.velocity.y = -speed
       this.updateMainPlayerObj()
     }
     else if (cursors.down.isDown && cursors.left.isDown) {
       mainPlayer.animations.play('left')
-      mainPlayer.body.velocity.y = speed;
+      mainPlayer.body.velocity.y = speed
       this.updateMainPlayerObj()
     }
     else if (cursors.down.isDown && cursors.right.isDown) {
       mainPlayer.animations.play('right')
-      mainPlayer.body.velocity.x = speed;
+      mainPlayer.body.velocity.x = speed
       this.updateMainPlayerObj()
     }
     else if (cursors.up.isDown) {
       mainPlayer.animations.play('top')
-      mainPlayer.body.velocity.x = -speed;
-      mainPlayer.body.velocity.y = -speed;
+      mainPlayer.body.velocity.x = -speed
+      mainPlayer.body.velocity.y = -speed
       this.updateMainPlayerObj()
     }
     else if (cursors.down.isDown) {
       mainPlayer.animations.play('bottom')
-      mainPlayer.body.velocity.x = speed;
-      mainPlayer.body.velocity.y = speed;
+      mainPlayer.body.velocity.x = speed
+      mainPlayer.body.velocity.y = speed
       this.updateMainPlayerObj()
     }
     else if (cursors.left.isDown) {
@@ -458,8 +457,6 @@ class GameCanvas extends React.Component {
 
     // Our collision and sorting code again.
     game.physics.isoArcade.collide(elementsGroup)
-    // game.iso.simpleSort(elementsGroup)
-    // elementsGroup.forEach((el) => console.log(el))
     game.iso.topologicalSort(elementsGroup)
     // ---------------------
     // update text elements positions

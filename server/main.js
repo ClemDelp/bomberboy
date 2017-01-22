@@ -65,8 +65,9 @@ class Game {
 		this.layers = {}
 		// SET BLOCK LAYER
 		let blockLayer = new Layer()
-		let tilemap = layers.blockLayer
-		if (config.map.isometric) tilemap = layers.isoLayers
+		// let tilemap = layers.blockLayer
+		// let tilemap = layers.isoLayers
+		let tilemap = layers.isoLayers2
 		if (config.map.perlin) {
 			// PERLIN
 			let size = config.map.rows / 10
