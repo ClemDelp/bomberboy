@@ -12,6 +12,7 @@ import {mergeIntoGameState} from '../reducers/game'
 // ENV
 //
 
+let water = []
 let hashMap = {}
 let mapMatrix = []
 const BUFFER_LIMIT = 100
@@ -190,6 +191,13 @@ class GameCanvas extends React.Component {
     cube.id = element.id
     // add block to main mapMatrix
     mapMatrix[y][x] = cube
+
+    switch (element.val.type) {
+      case 'water':
+        water.push(cube)
+        break
+    }
+
     return cube
   }
   addGhost (ghost) {
@@ -333,6 +341,14 @@ class GameCanvas extends React.Component {
       // const o = {x: 0, y: 0}
       // const coordsToLoad = mapLoading(delta, o, m)
       // console.log('coordsToLoad --> ', coordsToLoad)
+    }
+    // ---------------------------------
+    // WATER MVT
+    if (config.map.waterAnimation) {
+      water.forEach(function (w) {
+        w.isoZ = (-2 * Math.sin((game.time.now + (w.isoX * 7)) * 0.004)) + (-1 * Math.sin((game.time.now + (w.isoY * 8)) * 0.005));
+        w.alpha = Phaser.Math.clamp(1 + (w.isoZ * 0.1), 0.2, 1)
+      })
     }
     // ---------------------------------
     // BUFFERS MANAGERS

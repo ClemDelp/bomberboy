@@ -3,12 +3,14 @@ export const config = {
     blockTransparency: false
   },
   map: {
-    rows: 10, // min 10 for heightmap
-    cols: 10, // min 10 for heightmap
+    rows: 20, // min 10 for heightmap
+    cols: 20, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,
-    isometric: true
+    isometric: true,
+    reverseMap: true,
+    waterAnimation: true
   },
   block: {
     name: 'block',
@@ -107,14 +109,10 @@ export const layers = {
   },
   isoLayers2: {
     elements: [
-      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'water', frame: 4, z: 0}),
-      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground3', frame: 7, z: 0}),
-      Object.assign({}, config.isoTileMap_2, {color: '#4A86E8', type: 'grass', frame: 0, z: 0})
-      // Object.assign({}, config.isoTileMap_2, {color: '#C9DAF8', type: 'grass2', frame: 1, z: 0}),
-      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground', frame: 2, z: 20}),
-      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground2', frame: 5, z: 20}),
-      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'ground3', frame: 6, z: 20}),
-      // Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'montain', frame: 3, z: 0})
+      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'water', frame: 4, z: -5}),
+      Object.assign({}, config.isoTileMap_2, {color: '#C9DAF8', type: 'grass', frame: 1, z: 0}),
+      Object.assign({}, config.isoTileMap_2, {color: '#4A86E8', type: 'grass', frame: 0, z: 5}),
+      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'montain', frame: 2, z: 30})
     ]
   }
 }

@@ -72,9 +72,8 @@ class Game {
 			// PERLIN
 			let size = config.map.rows / 10
 			if (size < 1) size = 1
-			let levels =  tilemap.elements.length
-			let revert = true
-			var noise = heightmap(size, levels, revert, 1)
+			let levels = tilemap.elements.length
+			var noise = heightmap(size, levels, config.map.reverseMap, 1)
 			for(x = 0; x < noise.length; x++) {
 		    for(y = 0; y < noise[x].length; y++) {
 					const val = noise[x][y] - 1
