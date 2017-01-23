@@ -12,38 +12,8 @@ export const config = {
     reverseMap: true,
     waterAnimation: true
   },
-  block: {
-    name: 'block',
-    type: 'block',
-    size: [95, 95],
-    scale: [0.4, 0.4],
-    img: 'assets/sprites/block.png'
-  },
-  tilemap: {
-    name: 'block_4',
-    type: 'block',
-    size: [503, 510],
-    scale: [
-      0.37, // x = 38 * 5 el / 503 = 0.37
-      0.47 // x = 38 * 4 el / 510 = 0.29
-    ],
-    offset: [0, 0],
-    spriteSheet: 'assets/sprites/tilemap.png'
-  },
-  // Isometric
-  isoTileMap: {
-    name: 'isoTileMap',
-    type: 'iso',
-    size: [1024, 896],
-    scale: [
-      0.55, // x = (38 * 8 el / 1024) + 0.25
-      0.55 // x = (38 * 7 el / 896) + 0.25
-    ],
-    offset: [0, 0],
-    spriteSheet: 'assets/sprites/basic_ground_tiles.png'
-  },
-  isoTileMap_2: {
-    name: 'iso_tiles',
+  isoTilesMap: {
+    name: 'isoTilesMap',
     type: 'iso',
     size: [824, 103],
     scale: [
@@ -51,7 +21,20 @@ export const config = {
       0.7 // x = (38 * 7 el / 896) + 0.25
     ],
     offset: [0, 0],
-    spriteSheet: 'assets/sprites/iso_tiles.png'
+    spriteSheet: 'assets/sprites/iso_tiles.png',
+    tileName: 'tile'
+  },
+  treesLayers: {
+    name: 'treesLayers',
+    type: 'normal',
+    size: [824, 103],
+    scale: [
+      0.7, // x = (38 * 8 el / 1024) + 0.25
+      0.7 // x = (38 * 7 el / 896) + 0.25
+    ],
+    offset: [0, 0],
+    spriteSheet: 'assets/sprites/tree_tiles.png',
+    tileName: 'tree'
   },
   // PLYAER
   player: {
@@ -77,42 +60,24 @@ export const config = {
 }
 
 export const layers = {
-  blockLayer: {
+  isoTilesMap: {
     elements: [
-      Object.assign({}, config.tilemap, {color: '#4A86E8', type: 'water', frame: 4, offset: [0, 10]}), // water 1
-      Object.assign({}, config.tilemap, {color: '#C9DAF8', type: 'water', frame: 9, offset: [0, 10]}), // water 2
-      Object.assign({}, config.tilemap, {color: '#CFE2F3', type: 'water', frame: 14, offset: [0, 10]}), // water 3
-
-      Object.assign({}, config.tilemap, {color: '#FCE5CD', type: 'sand', frame: 3}), // sand 1
-      Object.assign({}, config.tilemap, {color: '#F9CB9C', type: 'sand', frame: 8}), // sand 2
-
-      Object.assign({}, config.tilemap, {color: '#B6D7A8', type: 'grass', frame: 0, offset: [0, 0]}), // grass
-      Object.assign({}, config.tilemap, {color: '#93C47D', type: 'grass', frame: 5, offset: [0, -2]}),
-      Object.assign({}, config.tilemap, {color: '#6AA84F', type: 'grass', frame: 10, offset: [0, -3]}),
-      Object.assign({}, config.tilemap, {color: '#38761D', type: 'grass', frame: 15, offset: [0, -4]}),
-
-      Object.assign({}, config.tilemap, {color: '#F6B26B', type: 'ground', frame: 7, offset: [0, -5]}), // ground 1
-      Object.assign({}, config.tilemap, {color: '#E69138', type: 'ground', frame: 2, offset: [0, -5]}), // ground 2
-
-      Object.assign({}, config.tilemap, {color: '#B45F06', type: 'mountain', frame: 1, offset: [0, -15]}), // mountain
-      Object.assign({}, config.tilemap, {color: '#783F04', type: 'mountain', frame: 6, offset: [0, -20]}),
-      Object.assign({}, config.tilemap, {color: '#783F04', type: 'mountain', frame: 11, offset: [0, -25]})
+      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'water', frame: 4, z: -5}),
+      Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, z: 0}),
+      Object.assign({}, config.isoTilesMap, {color: '#4A86E8', type: 'grass', frame: 0, z: 5}),
+      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'montain', frame: 2, z: 30})
     ]
   },
-  isoLayers: {
+  treesLayers: {
     elements: [
-      Object.assign({}, config.isoTileMap, {color: '#4A86E8', type: 'grass', frame: 0, z: 10}), // grass 1
-      Object.assign({}, config.isoTileMap, {color: '#C9DAF8', type: 'grass2', frame: 1, z: 0}), // grass 2
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground', frame: 2, z: 20}), // ground
-      Object.assign({}, config.isoTileMap, {color: '#CFE2F3', type: 'ground2', frame: 3, z: 0}), // ground
-    ]
-  },
-  isoLayers2: {
-    elements: [
-      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'water', frame: 4, z: -5}),
-      Object.assign({}, config.isoTileMap_2, {color: '#C9DAF8', type: 'grass', frame: 1, z: 0}),
-      Object.assign({}, config.isoTileMap_2, {color: '#4A86E8', type: 'grass', frame: 0, z: 5}),
-      Object.assign({}, config.isoTileMap_2, {color: '#CFE2F3', type: 'montain', frame: 2, z: 30})
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 0, z: 0, proba: 1, canHover: ['grass', 'montain']}),
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 1, z: 0, proba: 1, canHover: ['grass', 'montain']}),
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 2, z: 0, proba: 1, canHover: ['grass', 'montain']}),
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 3, z: 0, proba: 1, canHover: ['grass', 'montain']}),
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 4, z: 0, proba: 1, canHover: ['grass', 'montain']}),
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 5, z: 0, proba: 1, canHover: ['grass', 'montain']}),
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 6, z: 0, proba: 1, canHover: ['grass', 'montain']}),
+      Object.assign({}, config.treesLayers, {color: '#CFE2F3', type: 'tree', frame: 7, z: 0, proba: 1, canHover: ['grass', 'montain']})
     ]
   }
 }

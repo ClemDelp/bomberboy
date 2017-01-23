@@ -65,9 +65,10 @@ class Game {
 		this.layers = {}
 		// SET BLOCK LAYER
 		let blockLayer = new Layer()
+		let treesLayers = new Layer()
 		// let tilemap = layers.blockLayer
 		// let tilemap = layers.isoLayers
-		let tilemap = layers.isoLayers2
+		let tilemap = layers.isoTilesMap
 		if (config.map.perlin) {
 			// PERLIN
 			let size = config.map.rows / 10
@@ -92,10 +93,25 @@ class Game {
 				}
 			}
 		}
+		// TREES LAYERS
+		const treesElements = layers.treesLayers.elements
+		for (var yy = 0; yy < blockLayer.rows; yy++) {
+			for (var xx = 0; xx < blockLayer.cols; xx++) {
+				var ii = getRandomInt(0, treesElements.length - 1)
+				var treeElement = treesElements[ii]
+				if(Math.random() * 10 % 2 > 1) {
+					// IF THIS TREE CAN BE ON THIS GROUND TYPE
+					if (treeElement.canHover.indexOf(blockLayer.getVal(yy, xx).type) > -1) {
+						treesLayers.setVal(xx, yy, treeElement)
+					}
+				}
+			}
+		}
 
 		// DEFINE LAYERS
 		this.layers = {
-			'block': blockLayer
+			'block': blockLayer,
+			'trees': treesLayers
 		}
   }
 	getRefSize () {

@@ -23,6 +23,9 @@ export default class Layer {
   setVal (col, row, val) {
     this.matrix[row][col].val = val
   }
+  getVal (col, row) {
+    return this.matrix[row][col].val
+  }
   replaceObject (col, row, object) {
     this.matrix[row][col] = object
   }

@@ -13,6 +13,7 @@ import {mergeIntoGameState} from '../reducers/game'
 //
 
 let water = []
+let tree = []
 let hashMap = {}
 let mapMatrix = []
 const BUFFER_LIMIT = 100
@@ -105,6 +106,7 @@ class GameCanvas extends React.Component {
 
     // game.load.spritesheet('tile', 'assets/sprites/basic_ground_tiles.png', 128, 128) // width of a element, height
     game.load.spritesheet('tile', 'assets/sprites/iso_tiles.png', 103, 103) // width of a element, height
+    game.load.spritesheet('tree', 'assets/sprites/tree_tiles.png', 103, 103) // width of a element, height
     // --------------------------------------
   }
 
@@ -126,6 +128,7 @@ class GameCanvas extends React.Component {
     // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
+        console.log(layerName)
         const layer = layers[layerName]
         const matrixSize = layer.matrix.length
         for (var row = 0; row < matrixSize; row++) {
@@ -166,38 +169,42 @@ class GameCanvas extends React.Component {
       x * refSize,
       y * refSize,
       0,
-      'tile',
+      element.val.tileName,
       0,
       elementsGroup
     )
-    cube.anchor.set(0.5)
+    cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z / 10)
 
+    cube.frame = element.val.frame
+    cube.alpha = 1
+    cube.id = element.id
+
+    cube.isoZ += element.val.z
+    cube.anchor.set(0.5)
     // Enable the physics body on this cube.
     game.physics.isoArcade.enable(cube)
 
     // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
     cube.body.collideWorldBounds = true
-    cube.body.bounce.set(1, 1, 0.2)
 
     // Add a full bounce on the x and y axes, and a bit on the z axis.
     // cube.body.bounce.set(0, 0, 0.5);
-
     cube.body.immovable = true
-
-    cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z / 10)
-    cube.isoZ += element.val.z
-    cube.frame = element.val.frame
-    cube.alpha = 1
-    cube.id = element.id
-    // add block to main mapMatrix
-    mapMatrix[y][x] = cube
 
     switch (element.val.type) {
       case 'water':
         water.push(cube)
         break
+
+      case 'tree':
+        tree.push(cube)
+        cube.body.gravity.z = -500
+        cube.isoZ += 200
+        break
     }
 
+    // add block to main mapMatrix
+    mapMatrix[y][x] = cube
     return cube
   }
   addGhost (ghost) {
@@ -285,17 +292,6 @@ class GameCanvas extends React.Component {
     } else {
       dynamicElementsById[player.id] = newPlayer
     }
-
-    // var newPlayer = elementsGroup.create(player.x, player.y, 'dude')
-    // newPlayer.elementType = player.type
-    // newPlayer.scale.setTo(1.25, 1.25)
-    // newPlayer.animations.add('top', [0, 1, 2], 10, true);
-    // newPlayer.animations.add('right', [3, 4, 5], 10, true);
-    // newPlayer.animations.add('bottom', [6, 7, 8], 10, true);
-    // newPlayer.animations.add('left', [9, 10, 11], 10, true);
-    // dynamicElementsById[player.id] = newPlayer
-    // add player name above
-    // this.attachTextToSprite(newPlayer, player)
   }
   removeElement (element, explosion) {
     sprite = dynamicElementsById[element.id]
@@ -408,9 +404,9 @@ class GameCanvas extends React.Component {
             mainPlayer.y > block.y - refSize &&
             mainPlayer.y <= block.y
           ) {
-            game.add.tween(block).to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true);
+            game.add.tween(block).to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true)
           } else {
-            game.add.tween(block).to( { alpha: 1 }, 100, Phaser.Easing.Linear.None, true);
+            game.add.tween(block).to( { alpha: 1 }, 100, Phaser.Easing.Linear.None, true)
           }
         }
       })
