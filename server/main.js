@@ -102,7 +102,7 @@ class Game {
 				if(Math.random() * 10 % 2 > 1) {
 					// IF THIS TREE CAN BE ON THIS GROUND TYPE
 					if (treeElement.canHover.indexOf(blockLayer.getVal(yy, xx).type) > -1) {
-						treesLayers.setVal(xx, yy, treeElement)
+						treesLayers.setVal(yy, xx, treeElement)
 					}
 				}
 			}

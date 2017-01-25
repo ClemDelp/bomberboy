@@ -19,21 +19,17 @@ class Element {
 export class Ghost extends Element {
   constructor () {
     super()
-    const {ghost} = config
-    this.type = ghost.name
-    this.canHover = ghost.canHover
-    this.orientation = ghost.orientation
-    this.velocity = ghost.velocity
+    Object.keys(config.ghost).forEach((key) => {
+      this[key] = config.ghost[key]
+    })
   }
 }
 
 export class Player extends Element {
   constructor () {
     super()
-    const {player} = config
-    this.type = player.name
-    this.canHover = player.canHover
-    this.orientation = player.orientation
-    this.velocity = player.velocity
+    Object.keys(config.player).forEach((key) => {
+      this[key] = config.player[key]
+    })
   }
 }

@@ -61,6 +61,9 @@ Streamy.on('gameStream', function (response) {
 class GameCanvas extends React.Component {
   constructor (props) {
     super(props)
+    this.state = {
+      refSize: config.map.squareSize
+    }
     this.create = this.create.bind(this)
     this.preload = this.preload.bind(this)
     this.update = this.update.bind(this)
@@ -142,12 +145,20 @@ class GameCanvas extends React.Component {
             const element = layer.matrix[y][x]
             const refSize = layer.refSize
             if (element.val && element.val.type) {
-              this.addBlockToMap(element, refSize, x, y)
+              // this.addBlockToMap(element, refSize, x, y)
+              this.addElementToMap(element, x, y)
             }
           }
         }
       })
     }
+    game.input.keyboard.addKeyCapture([
+      Phaser.Keyboard.LEFT,
+      Phaser.Keyboard.RIGHT,
+      Phaser.Keyboard.UP,
+      Phaser.Keyboard.DOWN,
+      Phaser.Keyboard.SPACEBAR
+    ])
 
     if (ghosts) {
       Object.keys(ghosts).forEach((key) => {
@@ -159,54 +170,56 @@ class GameCanvas extends React.Component {
     if (players) {
       Object.keys(players).forEach((key) => {
         const player = players[key]
-        this.addPlayerToMap(game, player, playerId)
+        // this.addPlayerToMap(game, player, playerId)
+        console.log(player)
+        this.addElementToMap(player, player.x, player.y)
       })
     }
   }
-  addBlockToMap (element, refSize, x, y) {
-    const {game} = this.state
-    let cube = game.add.isoSprite(
-      x * refSize,
-      y * refSize,
-      0,
-      element.val.tileName,
-      0,
-      elementsGroup
-    )
-    cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z / 10)
-
-    cube.frame = element.val.frame
-    cube.alpha = 1
-    cube.id = element.id
-
-    cube.isoZ += element.val.z
-    cube.anchor.set(0.5)
-    // Enable the physics body on this cube.
-    game.physics.isoArcade.enable(cube)
-
-    // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
-    cube.body.collideWorldBounds = true
-
-    // Add a full bounce on the x and y axes, and a bit on the z axis.
-    // cube.body.bounce.set(0, 0, 0.5);
-    cube.body.immovable = true
-
-    switch (element.val.type) {
-      case 'water':
-        water.push(cube)
-        break
-
-      case 'tree':
-        tree.push(cube)
-        cube.body.gravity.z = -500
-        cube.isoZ += 200
-        break
-    }
-
-    // add block to main mapMatrix
-    mapMatrix[y][x] = cube
-    return cube
-  }
+  // addBlockToMap (element, refSize, x, y) {
+  //   const {game} = this.state
+  //   let cube = game.add.isoSprite(
+  //     x * refSize,
+  //     y * refSize,
+  //     0,
+  //     element.val.tileName,
+  //     0,
+  //     elementsGroup
+  //   )
+  //   cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z / 10)
+  //
+  //   cube.frame = element.val.frame
+  //   cube.alpha = 1
+  //   cube.id = element.id
+  //
+  //   cube.isoZ += element.val.z
+  //   cube.anchor.set(0.5)
+  //   // Enable the physics body on this cube.
+  //   game.physics.isoArcade.enable(cube)
+  //
+  //   // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
+  //   cube.body.collideWorldBounds = true
+  //
+  //   // Add a full bounce on the x and y axes, and a bit on the z axis.
+  //   // cube.body.bounce.set(0, 0, 0.5);
+  //   cube.body.immovable = true
+  //
+  //   switch (element.val.type) {
+  //     case 'water':
+  //       water.push(cube)
+  //       break
+  //
+  //     case 'tree':
+  //       tree.push(cube)
+  //       cube.body.gravity.z = -500
+  //       cube.isoZ += 200
+  //       break
+  //   }
+  //
+  //   // add block to main mapMatrix
+  //   mapMatrix[y][x] = cube
+  //   return cube
+  // }
   addGhost (ghost) {
     const {game} = this.state
     // const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
@@ -255,44 +268,109 @@ class GameCanvas extends React.Component {
     }
 
   }
-  addPlayerToMap (game, player, playerId) {
-    var newPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup)
-    newPlayer.elementType = player.type
-    newPlayer.scale.setTo(1.25, 1.25)
-    newPlayer.animations.add('top', [0, 1, 2], 10, true)
-    newPlayer.animations.add('right', [3, 4, 5], 10, true)
-    newPlayer.animations.add('bottom', [6, 7, 8], 10, true)
-    newPlayer.animations.add('left', [9, 10, 11], 10, true)
-    newPlayer.isoZ += 200
-    newPlayer.anchor.set(0.5)
-    game.physics.isoArcade.enable(newPlayer)
-    newPlayer.body.gravity.z = -500
-    newPlayer.body.collideWorldBounds = true
-    game.camera.follow(newPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1)
-    // add player name above
-    this.attachTextToSprite(newPlayer, player)
-    // If it's the main player
-    if (player.id === playerId) {
-      mainPlayer = newPlayer
-      mainPlayerObj = player
-      // Set up our controls.
-      cursors = game.input.keyboard.createCursorKeys()
-      game.input.keyboard.addKeyCapture([
-        Phaser.Keyboard.LEFT,
-        Phaser.Keyboard.RIGHT,
-        Phaser.Keyboard.UP,
-        Phaser.Keyboard.DOWN,
-        Phaser.Keyboard.SPACEBAR
-      ])
+  addElementToMap (element, x, y) {
+    const val = element.val ? element.val : element
+    const {game, refSize} = this.state
+    const {playerId} = this.props
+    let el = game.add.isoSprite(
+      val.type === 'player' ? x : x * refSize,
+      val.type === 'player' ? y : y * refSize,
+      0,
+      val.tileName,
+      0,
+      elementsGroup
+    )
 
-      var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
-      space.onDown.add(function () {
-          mainPlayer.body.velocity.z = 200
-      }, this)
-    } else {
-      dynamicElementsById[player.id] = newPlayer
+    el.id = element.id
+    el.elementType = val.type
+    if (val.tye === 'player') el.scale.setTo(val.scale[0], val.scale[1])
+    else el.scale.setTo(val.scale[0], val.scale[1], val.isoZ / 10)
+
+    if (val.animations) {
+      Object.keys(val.animations).forEach((key) => {
+        const animation = val.animations[key]
+        el.animations.add(
+          key,
+          animation.frames,
+          animation.duration,
+          animation.loop
+        )
+      })
     }
+
+    el.frame = val.frame
+    el.alpha = val.alpha
+    el.isoZ += val.isoZ
+    el.anchor.set(val.anchor)
+
+    if (val.physics.isoArcade) game.physics.isoArcade.enable(el)
+    el.body.gravity.z = val.body.gravity.z
+    el.body.collideWorldBounds = val.body.collideWorldBounds // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
+    // Add a full bounce on the x and y axes, and a bit on the z axis.
+    // cube.body.bounce.set(0, 0, 0.5);
+    el.body.immovable = val.body.immovable
+    switch (val.type) {
+      case 'water':
+        water.push(el)
+        break
+
+      case 'player':
+        // add player name above
+        this.attachTextToSprite(el, val)
+        // If it's the main player
+        if (el.id === playerId) {
+          game.camera.follow(el, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1)
+          mainPlayer = el
+          mainPlayerObj = element
+          // Set up our controls.
+          cursors = game.input.keyboard.createCursorKeys()
+          var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+          space.onDown.add(() => {mainPlayer.body.velocity.z = val.body.velocity.z}, this)
+        } else {
+          dynamicElementsById[el.id] = el
+        }
+        break
+    }
+    return el
   }
+  // addPlayerToMap (game, player, playerId) {
+  //   var newPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup)
+  //   newPlayer.elementType = player.type
+  //   newPlayer.scale.setTo(1.25, 1.25)
+  //   newPlayer.animations.add('top', [0, 1, 2], 10, true)
+  //   newPlayer.animations.add('right', [3, 4, 5], 10, true)
+  //   newPlayer.animations.add('bottom', [6, 7, 8], 10, true)
+  //   newPlayer.animations.add('left', [9, 10, 11], 10, true)
+  //   newPlayer.isoZ += 200
+  //   newPlayer.anchor.set(0.5)
+  //   game.physics.isoArcade.enable(newPlayer)
+  //   newPlayer.body.gravity.z = -500
+  //   newPlayer.body.collideWorldBounds = true
+  //   game.camera.follow(newPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1)
+  //   // add player name above
+  //   this.attachTextToSprite(newPlayer, player)
+  //   // If it's the main player
+  //   if (player.id === playerId) {
+  //     mainPlayer = newPlayer
+  //     mainPlayerObj = player
+  //     // Set up our controls.
+  //     cursors = game.input.keyboard.createCursorKeys()
+  //     game.input.keyboard.addKeyCapture([
+  //       Phaser.Keyboard.LEFT,
+  //       Phaser.Keyboard.RIGHT,
+  //       Phaser.Keyboard.UP,
+  //       Phaser.Keyboard.DOWN,
+  //       Phaser.Keyboard.SPACEBAR
+  //     ])
+  //
+  //     var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
+  //     space.onDown.add(function () {
+  //         mainPlayer.body.velocity.z = 200
+  //     }, this)
+  //   } else {
+  //     dynamicElementsById[player.id] = newPlayer
+  //   }
+  // }
   removeElement (element, explosion) {
     sprite = dynamicElementsById[element.id]
     if (sprite) {
