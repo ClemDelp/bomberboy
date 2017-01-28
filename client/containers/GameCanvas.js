@@ -124,14 +124,15 @@ class GameCanvas extends React.Component {
     // Set the global gravity for IsoArcade.
     // game.physics.isoArcade.gravity.setTo(0, 0, -500);
     // CREATE GROUPS
-    elementsGroup = game.add.group()
+    // elementsGroup = game.add.group()
+    elementsGroup = game.add.physicsGroup();
     // we won't really be using IsoArcade physics, but I've enabled it anyway so the debug bodies can be seen
-    elementsGroup.enableBody = true
     elementsGroup.physicsBodyType = Phaser.Plugin.Isometric.ISOARCADE
+    // elementsGroup.enableBody = true
+
     // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
-        console.log(layerName)
         const layer = layers[layerName]
         const matrixSize = layer.matrix.length
         for (var row = 0; row < matrixSize; row++) {
@@ -171,7 +172,6 @@ class GameCanvas extends React.Component {
       Object.keys(players).forEach((key) => {
         const player = players[key]
         // this.addPlayerToMap(game, player, playerId)
-        console.log(player)
         this.addElementToMap(player, player.x, player.y)
       })
     }
@@ -275,7 +275,7 @@ class GameCanvas extends React.Component {
     let el = game.add.isoSprite(
       val.type === 'player' ? x : x * refSize,
       val.type === 'player' ? y : y * refSize,
-      0,
+      val.isoZ,
       val.tileName,
       0,
       elementsGroup
@@ -300,7 +300,8 @@ class GameCanvas extends React.Component {
 
     el.frame = val.frame
     el.alpha = val.alpha
-    el.isoZ += val.isoZ
+    // if (val.type !== 'tree') el.isoZ += val.isoZ
+
     el.anchor.set(val.anchor)
 
     if (val.physics.isoArcade) game.physics.isoArcade.enable(el)
@@ -310,6 +311,15 @@ class GameCanvas extends React.Component {
     // cube.body.bounce.set(0, 0, 0.5);
     el.body.immovable = val.body.immovable
     switch (val.type) {
+      case 'tree':
+        el.body.checkCollision.up = true
+        el.body.checkCollision.down = true
+        el.body.checkCollision.frontX = false
+        el.body.checkCollision.frontY = false
+        el.body.checkCollision.backX = false
+        el.body.checkCollision.backY = false
+        break
+
       case 'water':
         water.push(el)
         break
@@ -547,6 +557,7 @@ class GameCanvas extends React.Component {
 
     // Our collision and sorting code again.
     game.physics.isoArcade.collide(elementsGroup)
+    // game.iso.simpleSort(elementsGroup)
     game.iso.topologicalSort(elementsGroup)
     // ---------------------
     // update text elements positions

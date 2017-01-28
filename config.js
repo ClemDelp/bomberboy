@@ -3,8 +3,8 @@ export const config = {
     blockTransparency: false
   },
   map: {
-    rows: 20, // min 10 for heightmap
-    cols: 20, // min 10 for heightmap
+    rows: 15, // min 10 for heightmap
+    cols: 15, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,
@@ -17,7 +17,7 @@ export const config = {
 
   isoTilesMap: {
     name: 'isoTilesMap',
-    type: 'iso',
+    type: 'block',
     size: [824, 103],
     scale: [
       0.7, // x = (38 * 8 el / 1024) + 0.25
@@ -46,12 +46,12 @@ export const config = {
 
   treesLayers: {
     name: 'treesLayers',
-    type: 'normal',
+    type: 'tree',
     canHover: ['grass', 'montain'],
     size: [824, 103],
     scale: [
-      0.7, // x = (38 * 8 el / 1024) + 0.25
-      0.7 // x = (38 * 7 el / 896) + 0.25
+      0.65, // x = (38 * 8 el / 1024) + 0.25
+      0.65 // x = (38 * 7 el / 896) + 0.25
     ],
     offset: [0, 0],
     spriteSheet: 'assets/sprites/tree_tiles.png',
@@ -62,10 +62,10 @@ export const config = {
       isoArcade: true
     },
     body: {
-      collideWorldBounds: true,
+      collideWorldBounds: false,
       immovable: false,
       gravity: {
-        z: -500
+        z: -1000
       }
     },
     isoZ: 200
@@ -147,6 +147,8 @@ export const layers = {
       Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'water', frame: 4, isoZ: -5}),
       Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 0}),
       Object.assign({}, config.isoTilesMap, {color: '#4A86E8', type: 'grass', frame: 0, isoZ: 5}),
+      Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 10}),
+      Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 20}),
       Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'montain', frame: 2, isoZ: 30})
     ]
   },
