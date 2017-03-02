@@ -3,14 +3,20 @@ export const config = {
     blockTransparency: false
   },
   map: {
-    rows: 15, // min 10 for heightmap
-    cols: 15, // min 10 for heightmap
+    width: 20000, // the canvas size in px
+    height: 20000, // the canvas size in px
+    rows: 20, // min 10 for heightmap
+    cols: 20, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,
     isometric: true,
     reverseMap: true,
-    waterAnimation: true
+    waterAnimation: true,
+    trees: true,
+    depthSort: false,
+    depthType: 'topologicalSort',
+    physic: true
   },
 
 

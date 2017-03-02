@@ -94,22 +94,23 @@ class Game {
 			}
 		}
 		// TREES LAYERS
-		const treesElements = layers.treesLayers.elements
-		for (var yy = 0; yy < blockLayer.rows; yy++) {
-			for (var xx = 0; xx < blockLayer.cols; xx++) {
-				var ii = getRandomInt(0, treesElements.length - 1)
-				var treeElement = treesElements[ii]
-				if(getRandomInt(0, 3) === 3) {
-					// IF THIS TREE CAN BE ON THIS GROUND TYPE
-					const supportBlockElement = blockLayer.getVal(yy, xx)
-					if (treeElement.canHover.indexOf(supportBlockElement.type) > -1) {
-						treeElement.isoZ = supportBlockElement.isoZ + 100
-						treesLayers.setVal(yy, xx, treeElement)
+		if (config.map.trees) {
+			const treesElements = layers.treesLayers.elements
+			for (var yy = 0; yy < blockLayer.rows; yy++) {
+				for (var xx = 0; xx < blockLayer.cols; xx++) {
+					var ii = getRandomInt(0, treesElements.length - 1)
+					var treeElement = treesElements[ii]
+					if(getRandomInt(0, 3) === 3) {
+						// IF THIS TREE CAN BE ON THIS GROUND TYPE
+						const supportBlockElement = blockLayer.getVal(yy, xx)
+						if (treeElement.canHover.indexOf(supportBlockElement.type) > -1) {
+							treeElement.isoZ = supportBlockElement.isoZ + 100
+							treesLayers.setVal(yy, xx, treeElement)
+						}
 					}
 				}
 			}
 		}
-
 		// DEFINE LAYERS
 		this.layers = {
 			'block': blockLayer,

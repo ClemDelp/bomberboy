@@ -1,6 +1,7 @@
 //
 // MODULE
 //
+
 import React from 'react'
 import {connect} from 'react-redux'
 import {config} from '../../config'
@@ -34,9 +35,11 @@ var spaceKey
 var bulletTime = 0
 var prevCoord = {x: 0, y: 0}
 var selectedTile = {}
+
 //
 // STREAMS
 //
+
 Streamy.on('newPlayer', function (response) {
   if (
     response &&
@@ -86,7 +89,6 @@ class GameCanvas extends React.Component {
     game.load.spritesheet('tpt', 'assets/sprites/teleportation.png', 100, 100)
     game.load.spritesheet('dude', 'assets/sprites/bob.gif', 17.5, 32)
     game.load.spritesheet('ghost', 'assets/sprites/ghosts.png', 48, 48) // 19 img per row
-
     // --------------------------------------
     // ISOMETRIC
     // --------------------------------------
@@ -95,24 +97,19 @@ class GameCanvas extends React.Component {
     game.stage.disableVisibilityChange = true
     game.plugins.add(new Phaser.Plugin.Isometric(game))
     //  Modify the world and camera bounds
-    game.world.setBounds(-50, -50, 2000, 2000)
-
+    game.world.setBounds(-50, -50, config.map.width, config.map.height)
     // Start the IsoArcade physics system.
     game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE)
-
     // This is used to set a game canvas-based offset for the 0, 0, 0 isometric coordinate - by default
     // this point would be at screen coordinates 0, 0 (top left) which is usually undesirable.
     game.iso.anchor.setTo(0.5, 0.2)
-
     game.stage.backgroundColor = '#2d2d2d'
     game.physics.arcade.sortDirection = Phaser.Physics.Arcade.TOP_BOTTOM
-
     // game.load.spritesheet('tile', 'assets/sprites/basic_ground_tiles.png', 128, 128) // width of a element, height
     game.load.spritesheet('tile', 'assets/sprites/iso_tiles.png', 103, 103) // width of a element, height
     game.load.spritesheet('tree', 'assets/sprites/tree_tiles.png', 103, 103) // width of a element, height
     // --------------------------------------
   }
-
   create () {
     const {game} = this.state
     const {
@@ -121,15 +118,11 @@ class GameCanvas extends React.Component {
       players,
       playerId
     } = this.props
-    // Set the global gravity for IsoArcade.
-    // game.physics.isoArcade.gravity.setTo(0, 0, -500);
     // CREATE GROUPS
-    // elementsGroup = game.add.group()
     elementsGroup = game.add.physicsGroup();
     // we won't really be using IsoArcade physics, but I've enabled it anyway so the debug bodies can be seen
     elementsGroup.physicsBodyType = Phaser.Plugin.Isometric.ISOARCADE
     // elementsGroup.enableBody = true
-
     // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
@@ -176,63 +169,14 @@ class GameCanvas extends React.Component {
       })
     }
   }
-  // addBlockToMap (element, refSize, x, y) {
-  //   const {game} = this.state
-  //   let cube = game.add.isoSprite(
-  //     x * refSize,
-  //     y * refSize,
-  //     0,
-  //     element.val.tileName,
-  //     0,
-  //     elementsGroup
-  //   )
-  //   cube.scale.setTo(element.val.scale[0], element.val.scale[1], element.val.z / 10)
-  //
-  //   cube.frame = element.val.frame
-  //   cube.alpha = 1
-  //   cube.id = element.id
-  //
-  //   cube.isoZ += element.val.z
-  //   cube.anchor.set(0.5)
-  //   // Enable the physics body on this cube.
-  //   game.physics.isoArcade.enable(cube)
-  //
-  //   // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
-  //   cube.body.collideWorldBounds = true
-  //
-  //   // Add a full bounce on the x and y axes, and a bit on the z axis.
-  //   // cube.body.bounce.set(0, 0, 0.5);
-  //   cube.body.immovable = true
-  //
-  //   switch (element.val.type) {
-  //     case 'water':
-  //       water.push(cube)
-  //       break
-  //
-  //     case 'tree':
-  //       tree.push(cube)
-  //       cube.body.gravity.z = -500
-  //       cube.isoZ += 200
-  //       break
-  //   }
-  //
-  //   // add block to main mapMatrix
-  //   mapMatrix[y][x] = cube
-  //   return cube
-  // }
   addGhost (ghost) {
     const {game} = this.state
-    // const newGhost = game.add.sprite(ghost.x, ghost.y, config.ghost.name)
-    // newGhost.scale.setTo(config.ghost.scale[0], config.ghost.scale[1]);
-
     const newGhost = game.add.sprite(ghost.x, ghost.y, 'ghost')
     newGhost.animations.add('right', [0, 20], 10, true)
     newGhost.animations.add('down', [40, 60], 10, true)
     newGhost.animations.add('left', [80, 100], 10, true)
     newGhost.animations.add('up', [120, 140], 10, true)
-
     newGhost.scale.setTo(0.75, 0.75)
-
     dynamicElementsById[ghost.id] = newGhost
     this.attachTextToSprite(newGhost, ghost)
   }
@@ -241,7 +185,9 @@ class GameCanvas extends React.Component {
     var explosion = game.add.sprite(x, y, 'boom')
     explosion.anchor.set(0.5)
     //  Here we add a new animation called 'walk'
-    //  Because we didn't give any other parameters it's going to make an animation from all available frames in the 'mummy' sprite sheet
+    //  Because we didn't give any other parameters
+    // it's going to make an animation from all available
+    // frames in the 'mummy' sprite sheet
     var boom = explosion.animations.add('boom')
     //  And this starts the animation playing by using its key ("walk")
     //  30 is the frame rate (30fps)
@@ -300,7 +246,6 @@ class GameCanvas extends React.Component {
 
     el.frame = val.frame
     el.alpha = val.alpha
-    // if (val.type !== 'tree') el.isoZ += val.isoZ
 
     el.anchor.set(val.anchor)
 
@@ -343,44 +288,6 @@ class GameCanvas extends React.Component {
     }
     return el
   }
-  // addPlayerToMap (game, player, playerId) {
-  //   var newPlayer = game.add.isoSprite(player.x, player.y, 0, 'dude', 0, elementsGroup)
-  //   newPlayer.elementType = player.type
-  //   newPlayer.scale.setTo(1.25, 1.25)
-  //   newPlayer.animations.add('top', [0, 1, 2], 10, true)
-  //   newPlayer.animations.add('right', [3, 4, 5], 10, true)
-  //   newPlayer.animations.add('bottom', [6, 7, 8], 10, true)
-  //   newPlayer.animations.add('left', [9, 10, 11], 10, true)
-  //   newPlayer.isoZ += 200
-  //   newPlayer.anchor.set(0.5)
-  //   game.physics.isoArcade.enable(newPlayer)
-  //   newPlayer.body.gravity.z = -500
-  //   newPlayer.body.collideWorldBounds = true
-  //   game.camera.follow(newPlayer, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1)
-  //   // add player name above
-  //   this.attachTextToSprite(newPlayer, player)
-  //   // If it's the main player
-  //   if (player.id === playerId) {
-  //     mainPlayer = newPlayer
-  //     mainPlayerObj = player
-  //     // Set up our controls.
-  //     cursors = game.input.keyboard.createCursorKeys()
-  //     game.input.keyboard.addKeyCapture([
-  //       Phaser.Keyboard.LEFT,
-  //       Phaser.Keyboard.RIGHT,
-  //       Phaser.Keyboard.UP,
-  //       Phaser.Keyboard.DOWN,
-  //       Phaser.Keyboard.SPACEBAR
-  //     ])
-  //
-  //     var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
-  //     space.onDown.add(function () {
-  //         mainPlayer.body.velocity.z = 200
-  //     }, this)
-  //   } else {
-  //     dynamicElementsById[player.id] = newPlayer
-  //   }
-  // }
   removeElement (element, explosion) {
     sprite = dynamicElementsById[element.id]
     if (sprite) {
@@ -549,16 +456,24 @@ class GameCanvas extends React.Component {
       mainPlayer.body.velocity.y = -speed + 100
       this.updateMainPlayerObj()
     }
-
+    // Stop player animation
     if (
       mainPlayer.body.velocity.x === 0 &&
       mainPlayer.body.velocity.y === 0
     ) mainPlayer.animations.stop()
-
+    // ---------------------
     // Our collision and sorting code again.
-    game.physics.isoArcade.collide(elementsGroup)
-    // game.iso.simpleSort(elementsGroup)
-    game.iso.topologicalSort(elementsGroup)
+    if (config.map.physic) game.physics.isoArcade.collide(elementsGroup)
+    if (config.map.depthSort) {
+      switch (config.map.depthType) {
+        case 'topologicalSort':
+          game.iso.topologicalSort(elementsGroup)
+          break
+        default:
+          game.iso.simpleSort(elementsGroup)
+          break
+      }
+    }
     // ---------------------
     // update text elements positions
     Object.keys(textElements).forEach((key) => {
@@ -567,8 +482,6 @@ class GameCanvas extends React.Component {
       textElement.element.y = Math.floor(textElement.sprite.y - 10)
     })
     // ---------------------
-    // re order Z depth
-    // elementsGroup.sort('y', Phaser.Group.SORT_ASCENDING);
   }
   addTeleportationAnimation (x, y) {
     const {game} = this.state
@@ -579,22 +492,22 @@ class GameCanvas extends React.Component {
   }
   teleportation (element) {
     const {game} = this.state
-      if (game.time.now > bulletTime) {
-        bulletTime = game.time.now + 250;
-        // GET CONTEXT GAME
-        apiRequest('/teleportation', {method: 'POST', body: element}, (response) => {
-          if (response.data) {
-            const from = Object.assign({}, mainPlayerObj)
-            this.addTeleportationAnimation(from.x, from.y)
-            mainPlayerObj.x = response.data.x * refSize
-            mainPlayerObj.y = response.data.y * refSize
-            mainPlayer.x = response.data.x * refSize
-            mainPlayer.y = response.data.y * refSize
-            const to = Object.assign({}, mainPlayerObj)
-            this.addTeleportationAnimation(to.x, to.y)
-          }
-        })
-      }
+    if (game.time.now > bulletTime) {
+      bulletTime = game.time.now + 250;
+      // GET CONTEXT GAME
+      apiRequest('/teleportation', {method: 'POST', body: element}, (response) => {
+        if (response.data) {
+          const from = Object.assign({}, mainPlayerObj)
+          this.addTeleportationAnimation(from.x, from.y)
+          mainPlayerObj.x = response.data.x * refSize
+          mainPlayerObj.y = response.data.y * refSize
+          mainPlayer.x = response.data.x * refSize
+          mainPlayer.y = response.data.y * refSize
+          const to = Object.assign({}, mainPlayerObj)
+          this.addTeleportationAnimation(to.x, to.y)
+        }
+      })
+    }
   }
   getDelta (currentCoord, prevCoord) {
     return {
@@ -616,15 +529,12 @@ class GameCanvas extends React.Component {
   collisionHandler (player, block) {
     // here put the collision logic
   }
-
   renderCanvas () {
     const {game} = this.state
     game.debug.text('fps: ' + game.time.fps || '--', 2, 14, "#ffffff");
-
     // elementsGroup.forEach(function (tile) {
     //     game.debug.body(tile, 'rgba(189, 221, 235, 0.6)', false);
     // });
-
     // game.debug.cameraInfo(game.camera, 32, 32);
     // game.debug.text('Sprite z-depth: ' + mainPlayer.z, 10, 20);
     // game.debug.text('mainPlayer.x: ' + mainPlayer.x, 10, 20);
@@ -657,6 +567,7 @@ class GameCanvas extends React.Component {
 //
 // EXPORT
 //
+
 function mapStateToProps ({
   game: {
     layers,
