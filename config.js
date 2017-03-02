@@ -14,12 +14,10 @@ export const config = {
     reverseMap: true,
     waterAnimation: true,
     trees: true,
-    depthSort: false,
-    depthType: 'topologicalSort',
+    depthSort: true,
+    topologicalSort: false,
     physic: true
   },
-
-
 
   isoTilesMap: {
     name: 'isoTilesMap',

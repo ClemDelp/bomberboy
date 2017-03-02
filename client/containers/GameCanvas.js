@@ -465,14 +465,8 @@ class GameCanvas extends React.Component {
     // Our collision and sorting code again.
     if (config.map.physic) game.physics.isoArcade.collide(elementsGroup)
     if (config.map.depthSort) {
-      switch (config.map.depthType) {
-        case 'topologicalSort':
-          game.iso.topologicalSort(elementsGroup)
-          break
-        default:
-          game.iso.simpleSort(elementsGroup)
-          break
-      }
+      if (config.map.topologicalSort) game.iso.topologicalSort(elementsGroup)
+      else game.iso.simpleSort(elementsGroup)
     }
     // ---------------------
     // update text elements positions
