@@ -47,10 +47,17 @@ Meteor.startup(() => {
           players,
           playerId
         } = response.data
-        if (layers) store.dispatch(mergeIntoGameState({layers}))
-        if (ghosts) store.dispatch(mergeIntoGameState({ghosts}))
-        if (players) store.dispatch(mergeIntoGameState({players}))
-        if (playerId) store.dispatch(mergeIntoGameState({playerId}))
+        if (
+          layers &&
+          ghosts &&
+          players &&
+          playerId
+        ) store.dispatch(mergeIntoGameState({
+          layers,
+          ghosts,
+          players,
+          playerId
+        }))
       }
     })
 	}

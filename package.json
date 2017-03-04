@@ -6,7 +6,9 @@
   },
   "dependencies": {
     "babel-polyfill": "^6.13.0",
+    "babel-runtime": "^6.23.0",
     "body-parser": "^1.15.1",
+    "clemdelp": "git+https://github.com/ClemDelp/smart-layers.git",
     "express": "^4.14.0",
     "flexboxgrid": "^6.3.1",
     "heightmap-generator": "^1.0.0",
