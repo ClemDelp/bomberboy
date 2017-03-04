@@ -13,7 +13,7 @@ import {
   print2DMatrix,
   getCoordsAround,
   createLayer
-} from 'smart-layers'
+} from '../utils/smartLayers'
 
 //
 // ENV
@@ -350,7 +350,6 @@ class GameCanvas extends React.Component {
             spriteToRemove.destroy()
             spritesLayers[layerName][coord.y][coord.x] = 0
           }
-          else console.log('undefined')
         })
       })
     }
