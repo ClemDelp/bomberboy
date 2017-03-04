@@ -8,6 +8,12 @@ import {config} from '../../config'
 import {apiRequest} from '../utils/api'
 import {mapLoading} from '../utils/mapLoading'
 import {mergeIntoGameState} from '../reducers/game'
+import {
+  getNewCoords,
+  print2DMatrix,
+  getCoordsAround,
+  createLayer
+} from 'smart-layers'
 
 //
 // ENV
@@ -16,7 +22,6 @@ import {mergeIntoGameState} from '../reducers/game'
 let water = []
 let tree = []
 let hashMap = {}
-let mapMatrix = []
 const BUFFER_LIMIT = 100
 let buffer = []
 let newPlayerBuffer = []
@@ -35,6 +40,7 @@ var spaceKey
 var bulletTime = 0
 var prevCoord = {x: 0, y: 0}
 var selectedTile = {}
+var spritesLayers = {}
 
 //
 // STREAMS
@@ -127,23 +133,18 @@ class GameCanvas extends React.Component {
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
         const layer = layers[layerName]
-        const matrixSize = layer.matrix.length
-        for (var row = 0; row < matrixSize; row++) {
-          mapMatrix[row] = []
-          for (var col = 0; col < matrixSize; col++) {
-            mapMatrix[row][col] = 0
-          }
-        }
+        const newSpriteLayer = createLayer(layer.matrix.length)
         for (var y = 0; y < layer.matrix.length; y++) {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
             const refSize = layer.refSize
             if (element.val && element.val.type) {
-              // this.addBlockToMap(element, refSize, x, y)
-              this.addElementToMap(element, x, y)
+              // const newSprite = this.addElementToMap(element, x, y)
+              // newSpriteLayer[y][x] = newSprite
             }
           }
         }
+        spritesLayers[layerName] = newSpriteLayer
       })
     }
     game.input.keyboard.addKeyCapture([
@@ -226,7 +227,6 @@ class GameCanvas extends React.Component {
       0,
       elementsGroup
     )
-
     el.id = element.id
     el.elementType = val.type
     if (val.tye === 'player') el.scale.setTo(val.scale[0], val.scale[1])
@@ -245,8 +245,8 @@ class GameCanvas extends React.Component {
     }
 
     el.frame = val.frame
-    el.alpha = val.alpha
-
+    el.alpha = 0 //val.alpha
+    game.add.tween(el).to( { alpha: val.alpha }, 1000, Phaser.Easing.Linear.None, true)
     el.anchor.set(val.anchor)
 
     if (val.physics.isoArcade) game.physics.isoArcade.enable(el)
@@ -319,19 +319,40 @@ class GameCanvas extends React.Component {
     const {game} = this.state
     // ---------------------------------
     // UNDERSTAND USER MOVING
-    const coord = this.getCoord(mainPlayer.isoX, mainPlayer.isoY)
-    const delta = this.getDelta(coord, prevCoord)
-    if (this.isNewCoord(coord)) {
-      // if (mapMatrix[coord.y] && mapMatrix[coord.y][coord.x]) {
-      //   selectedTile.isoZ += 4
-      //   selectedTile = mapMatrix[coord.y][coord.x]
-      //   selectedTile.isoZ -= 4
-      // }
-      this.props.mergeIntoGameState({mainPlayerCoord: coord})
-      // const m = {x: 2, y: 2}
-      // const o = {x: 0, y: 0}
-      // const coordsToLoad = mapLoading(delta, o, m)
-      // console.log('coordsToLoad --> ', coordsToLoad)
+    const position = this.getCoord(mainPlayer.isoX, mainPlayer.isoY)
+    const direction = this.getDelta(position, prevCoord)
+    if (this.isNewCoord(position)) {
+      this.props.mergeIntoGameState({mainPlayerCoord: position})
+      const sizeAround = 5
+      const target = {
+        x: position.x + direction.x,
+        y: position.y + direction.y
+      }
+      const actualAround = getCoordsAround(position, sizeAround + 2)
+      const nextAround = getCoordsAround(target, sizeAround)
+      const coordsToLoad = getNewCoords(actualAround, nextAround)
+      const coordsToRemove = getNewCoords(nextAround, actualAround)
+      const {layers} = this.props
+      Object.keys(layers).forEach((layerName, index) => {
+        const layerFromProps = layers[layerName]
+        nextAround.forEach((coord) => {
+          const element = layerFromProps.matrix[coord.y] && layerFromProps.matrix[coord.y][coord.x]
+          if (element && element.val && element.val.type) {
+            if (spritesLayers[layerName][coord.y][coord.x] === 0) {
+              const newSprite = this.addElementToMap(element, coord.x, coord.y)
+              spritesLayers[layerName][coord.y][coord.x] = newSprite
+            }
+          }
+        })
+        coordsToRemove.forEach((coord) => {
+          const spriteToRemove = spritesLayers[layerName][coord.y] && spritesLayers[layerName][coord.y][coord.x]
+          if (spriteToRemove) {
+            spriteToRemove.destroy()
+            spritesLayers[layerName][coord.y][coord.x] = 0
+          }
+          else console.log('undefined')
+        })
+      })
     }
     // ---------------------------------
     // WATER MVT

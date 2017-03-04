@@ -150,10 +150,9 @@ export const layers = {
     elements: [
       Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'water', frame: 4, isoZ: -5}),
       Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 0}),
-      Object.assign({}, config.isoTilesMap, {color: '#4A86E8', type: 'grass', frame: 0, isoZ: 5}),
-      Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 10}),
-      Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 20}),
-      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'montain', frame: 2, isoZ: 30})
+      Object.assign({}, config.isoTilesMap, {color: '#4A86E8', type: 'grass', frame: 0, isoZ: 0}),
+      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'montain', frame: 2, isoZ: 20})
+
     ]
   },
   treesLayers: {
