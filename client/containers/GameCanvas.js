@@ -22,7 +22,6 @@ import {movementController} from '../utils/phaser-movement'
 
 let water = []
 let tree = []
-let hashMap = {}
 const BUFFER_LIMIT = 100
 let buffer = []
 let newPlayerBuffer = []
@@ -31,16 +30,12 @@ var dynamicElementsById = {} // --> all the moving elements
 var mainPlayerObj = {}
 var mainPlayer // main player
 var cursors
-var cursor3D
 var textElements = {}
 var elementsGroup
-var isoGroup
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
-var spaceKey
 var bulletTime = 0
 var prevCoord = {x: 0, y: 0}
-var selectedTile = {}
 var spritesLayers = {}
 
 //
@@ -498,9 +493,6 @@ class GameCanvas extends React.Component {
     // for server
     Streamy.emit('gameStream', { data: mainPlayerObj })
   }
-  collisionHandler (player, block) {
-    // here put the collision logic
-  }
   renderCanvas () {
     const {game} = this.state
     game.debug.text('fps: ' + game.time.fps || '--', 2, 14, "#ffffff");
@@ -531,7 +523,7 @@ class GameCanvas extends React.Component {
 
   render () {
     return (
-      <div id='phaser-example'></div>
+      <div id='phaser-example' />
     )
   }
 }
