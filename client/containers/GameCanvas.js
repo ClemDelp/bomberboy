@@ -14,6 +14,7 @@ import {
   getCoordsAround,
   createLayer
 } from '../utils/smartLayers'
+import {movementController} from '../utils/phaser-movement'
 
 //
 // ENV
@@ -309,10 +310,7 @@ class GameCanvas extends React.Component {
   }
   isNewCoord (coord) {
     const {x, y} = coord
-    if (prevCoord.x !== x || prevCoord.y !== y) {
-      prevCoord = {x, y}
-      return true
-    }
+    if (prevCoord.x !== x || prevCoord.y !== y) return true
     return false
   }
   update () {
@@ -321,14 +319,22 @@ class GameCanvas extends React.Component {
     // UNDERSTAND USER MOVING
     const position = this.getCoord(mainPlayer.isoX, mainPlayer.isoY)
     const direction = this.getDelta(position, prevCoord)
-    if (this.isNewCoord(position)) {
+    if (
+      this.isNewCoord(position) &&
+      (
+        Math.abs(direction.x) > 5 ||
+        Math.abs(direction.y) > 5
+      )
+    ) {
+      console.log(direction)
+      prevCoord = {x: position.x, y: position.y}
       this.props.mergeIntoGameState({mainPlayerCoord: position})
-      const sizeAround = 5
+      const sizeAround = 10
       const target = {
-        x: position.x + direction.x,
-        y: position.y + direction.y
+        x: position.x,
+        y: position.y
       }
-      const actualAround = getCoordsAround(position, sizeAround + 2)
+      const actualAround = getCoordsAround(position, sizeAround + 10)
       const nextAround = getCoordsAround(target, sizeAround)
       const coordsToLoad = getNewCoords(actualAround, nextAround)
       const coordsToRemove = getNewCoords(nextAround, actualAround)
@@ -428,59 +434,11 @@ class GameCanvas extends React.Component {
     }
     // --------------------------------
     // Move the player at this speed.
-    var speed = 200
-    mainPlayer.body.velocity.x = 0
-    mainPlayer.body.velocity.y = 0
-
-    if (cursors.up.isDown && cursors.left.isDown) {
-      mainPlayer.animations.play('top')
-      mainPlayer.body.velocity.x = -speed
-      this.updateMainPlayerObj()
-    }
-    else if (cursors.up.isDown && cursors.right.isDown) {
-      mainPlayer.animations.play('right')
-      mainPlayer.body.velocity.y = -speed
-      this.updateMainPlayerObj()
-    }
-    else if (cursors.down.isDown && cursors.left.isDown) {
-      mainPlayer.animations.play('left')
-      mainPlayer.body.velocity.y = speed
-      this.updateMainPlayerObj()
-    }
-    else if (cursors.down.isDown && cursors.right.isDown) {
-      mainPlayer.animations.play('right')
-      mainPlayer.body.velocity.x = speed
-      this.updateMainPlayerObj()
-    }
-    else if (cursors.up.isDown) {
-      mainPlayer.animations.play('top')
-      mainPlayer.body.velocity.x = -speed
-      mainPlayer.body.velocity.y = -speed
-      this.updateMainPlayerObj()
-    }
-    else if (cursors.down.isDown) {
-      mainPlayer.animations.play('bottom')
-      mainPlayer.body.velocity.x = speed
-      mainPlayer.body.velocity.y = speed
-      this.updateMainPlayerObj()
-    }
-    else if (cursors.left.isDown) {
-        mainPlayer.animations.play('left')
-        mainPlayer.body.velocity.x = -speed + 100
-        mainPlayer.body.velocity.y = speed - 100
-        this.updateMainPlayerObj()
-    }
-    else if (cursors.right.isDown) {
-      mainPlayer.animations.play('right')
-      mainPlayer.body.velocity.x = speed - 100
-      mainPlayer.body.velocity.y = -speed + 100
-      this.updateMainPlayerObj()
-    }
-    // Stop player animation
-    if (
-      mainPlayer.body.velocity.x === 0 &&
-      mainPlayer.body.velocity.y === 0
-    ) mainPlayer.animations.stop()
+    movementController (
+      cursors,
+      mainPlayer,
+      this.updateMainPlayerObj
+    )
     // ---------------------
     // Our collision and sorting code again.
     if (config.map.physic) game.physics.isoArcade.collide(elementsGroup)

@@ -5,8 +5,8 @@ export const config = {
   map: {
     width: 20000, // the canvas size in px
     height: 20000, // the canvas size in px
-    rows: 20, // min 10 for heightmap
-    cols: 20, // min 10 for heightmap
+    rows: 50, // min 10 for heightmap
+    cols: 50, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,
@@ -148,10 +148,10 @@ export const config = {
 export const layers = {
   isoTilesMap: {
     elements: [
-      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'water', frame: 4, isoZ: -5}),
-      Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 0}),
-      Object.assign({}, config.isoTilesMap, {color: '#4A86E8', type: 'grass', frame: 0, isoZ: 0}),
-      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'montain', frame: 2, isoZ: 20})
+      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'water', frame: 4, isoZ: 0}),
+      Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 5}),
+      Object.assign({}, config.isoTilesMap, {color: '#4A86E8', type: 'grass', frame: 0, isoZ: 5}),
+      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'montain', frame: 2, isoZ: 25})
 
     ]
   },
