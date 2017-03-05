@@ -154,7 +154,8 @@ class GameCanvas extends React.Component {
     if (ghosts) {
       Object.keys(ghosts).forEach((key) => {
         const ghost = ghosts[key]
-        this.addGhost(ghost)
+        // this.addGhost(ghost)
+        const g = this.addElementToMap(ghost, ghost.x, ghost.y)
       })
     }
 
@@ -162,20 +163,9 @@ class GameCanvas extends React.Component {
       Object.keys(players).forEach((key) => {
         const player = players[key]
         // this.addPlayerToMap(game, player, playerId)
-        this.addElementToMap(player, player.x, player.y)
+        const p = this.addElementToMap(player, player.x, player.y)
       })
     }
-  }
-  addGhost (ghost) {
-    const {game} = this.state
-    const newGhost = game.add.sprite(ghost.x, ghost.y, 'ghost')
-    newGhost.animations.add('right', [0, 20], 10, true)
-    newGhost.animations.add('down', [40, 60], 10, true)
-    newGhost.animations.add('left', [80, 100], 10, true)
-    newGhost.animations.add('up', [120, 140], 10, true)
-    newGhost.scale.setTo(0.75, 0.75)
-    dynamicElementsById[ghost.id] = newGhost
-    this.attachTextToSprite(newGhost, ghost)
   }
   addExplosion (x, y) {
     const {game} = this.state
@@ -216,8 +206,8 @@ class GameCanvas extends React.Component {
     const {game, refSize} = this.state
     const {playerId} = this.props
     let el = game.add.isoSprite(
-      val.type === 'player' ? x : x * refSize,
-      val.type === 'player' ? y : y * refSize,
+      (val.type === 'player' || val.type === 'ghost' ) ? x : x * refSize,
+      (val.type === 'player' || val.type === 'ghost' ) ? y : y * refSize,
       val.isoZ,
       val.tileName,
       0,
@@ -225,7 +215,8 @@ class GameCanvas extends React.Component {
     )
     el.id = element.id
     el.elementType = val.type
-    if (val.tye === 'player') el.scale.setTo(val.scale[0], val.scale[1])
+
+    if (val.tye === 'player' || val.type === 'ghost') el.scale.setTo(val.scale[0], val.scale[1])
     else el.scale.setTo(val.scale[0], val.scale[1], val.isoZ / 10)
 
     if (val.animations) {
@@ -265,6 +256,11 @@ class GameCanvas extends React.Component {
         water.push(el)
         break
 
+      case 'ghost':
+        this.attachTextToSprite(el, val)
+        dynamicElementsById[el.id] = el
+        break
+
       case 'player':
         // add player name above
         this.attachTextToSprite(el, val)
@@ -293,13 +289,6 @@ class GameCanvas extends React.Component {
       if (textElements[element.id]) textElements[element.id].element.destroy()
     }
   }
-  addElement (element) {
-    switch (element.type) {
-      case 'ghost':
-        this.addGhost(element)
-        break
-    }
-  }
   getCoord (x, y) {
     return {x: Math.round(x / refSize), y: Math.round(y / refSize)}
   }
@@ -321,7 +310,6 @@ class GameCanvas extends React.Component {
         Math.abs(direction.y) > 5
       )
     ) {
-      console.log(direction)
       prevCoord = {x: position.x, y: position.y}
       this.props.mergeIntoGameState({mainPlayerCoord: position})
       const sizeAround = 10
@@ -399,7 +387,7 @@ class GameCanvas extends React.Component {
             break
           // add element
           case 'add':
-            this.addElement(data)
+            this.addElementToMap(data, data.x, data.y)
             break
         }
       })

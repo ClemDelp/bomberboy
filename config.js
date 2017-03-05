@@ -5,15 +5,15 @@ export const config = {
   map: {
     width: 20000, // the canvas size in px
     height: 20000, // the canvas size in px
-    rows: 50, // min 10 for heightmap
-    cols: 50, // min 10 for heightmap
+    rows: 10, // min 10 for heightmap
+    cols: 10, // min 10 for heightmap
     squareSize: 38,
-    defaultGhostNumber: 0,
+    defaultGhostNumber: 1,
     perlin: true,
     isometric: true,
     reverseMap: true,
     waterAnimation: true,
-    trees: true,
+    trees: false,
     depthSort: true,
     topologicalSort: false,
     physic: true
@@ -44,9 +44,6 @@ export const config = {
     },
     isoZ: 0
   },
-
-
-
 
   treesLayers: {
     name: 'treesLayers',
@@ -81,7 +78,7 @@ export const config = {
   // PLYAER
   player: {
     type: 'player',
-    canHover: [0, 1, 2, 3, 4, 5],
+    canHover: ['grass'],
     img: 'assets/sprites/phaser-dude.png',
     animations: {
       top: {
@@ -133,15 +130,54 @@ export const config = {
 
   // GHOST
   ghost: {
-    name: 'ghost',
+    type: 'ghost',
+    canHover: ['grass'],
+    img: 'assets/sprites/ghosts.png',
+    animations: {
+      top: {
+        frames: [120, 140],
+        duration: 10,
+        loop: true
+      },
+      right: {
+        frames: [0, 20],
+        duration: 10,
+        loop: true
+      },
+      bottom: {
+        frames: [40, 60],
+        duration: 10,
+        loop: true
+      },
+      left: {
+        frames: [80, 100],
+        duration: 10,
+        loop: true
+      }
+    },
     size: [32, 32],
-    scale: [1, 1],
-    img: 'assets/sprites/ghost-icon.png',
-    canHover: [0],
+    scale: [0.75, 0.75],
     orientation: 'down',
     velocity: 5, // px per move
     speed: 100,
-    triesBeforeExplosion: 2
+    triesBeforeExplosion: 2,
+    tileName: 'ghost',
+    alpha: 1,
+    anchor: 0.5,
+    physics: {
+      isoArcade: true
+    },
+    body: {
+      collideWorldBounds: false,
+      immovable: false,
+      gravity: {
+        z: -500
+      },
+      velocity: {
+        z: 200
+      }
+    },
+    isoZ: 200
   }
 }
 

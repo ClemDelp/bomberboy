@@ -31,7 +31,6 @@ if(Meteor.isServer) {
 		// ROUTES
 		app.get('/getContextGame', function (req, res) {
 			const player = game.addPlayer()
-			console.log('send context to new player')
 			const context = {
 				layers: game.layers,
 				ghosts: game.ghostsById,
@@ -160,29 +159,21 @@ class Game {
 				if(x === config.map.cols) x--
 				y = Math.round(Math.random() * config.map.rows)
 				if(y === config.map.rows) y--
-				found = this.isFreePosition(x, y, element.canHover)
+				found = this.isFreePosition(x, y, element)
 			}
 			return {x, y}
 		}
 	}
-	isFreePosition (x, y, canHover) {
+	isFreePosition (x, y, element) {
 		let free = false
 		let stop = false
 		// Check on all layers
 		const layer = this.layers.block
-		return true
-		if (
-				!stop &&
-				layer.matrix[y] &&
-				layer.matrix[y][x] &&
-				_.indexOf(canHover, layer.matrix[y][x].val) > - 1
-		) {
-			free = true
-		} else {
-			free = false
-			stop = true
-		}
-		return free
+		const supportBlockElement = layer.getVal(y, x)
+		if (element.canHover.indexOf(supportBlockElement.type) > -1) {
+			element.isoZ = supportBlockElement.isoZ + 100
+			return true
+		} else return false
 	}
 	getMatrixCoordWithPosition (x, y) {
 		const refSize = this.getRefSize()
@@ -313,7 +304,7 @@ class Game {
 				rowIndex = Math.floor((y + (ghostH / 2)) / refSize)
 				break
 		}
-		if (this.isFreePosition(colIndex, rowIndex, ghost.canHover)) {
+		if (this.isFreePosition(colIndex, rowIndex, ghost)) {
 			ghost.x = x
 			ghost.y = y
 			return true
