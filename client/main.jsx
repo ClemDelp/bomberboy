@@ -7,7 +7,7 @@ import rootReducer from './reducers'
 import Root from './containers/Root'
 import ReactDOM from 'react-dom'
 import {apiRequest} from './utils/api'
-import {mergeIntoGameState, pushToBuffer} from './reducers/game'
+import {mergeIntoGameState, setElement} from './reducers/game'
 
 //
 // SAGA
@@ -61,6 +61,19 @@ Meteor.startup(() => {
       }
     })
 	}
+})
+
+//
+// STREAM
+Streamy.on('gameStream', function (response) {
+  if (
+    response &&
+    response.type &&
+    response.data
+  ) {
+    const element = response.data
+    store.dispatch(setElement(element.id, element))
+  }
 })
 
 //

@@ -2,6 +2,7 @@
 // EXPORTS
 //
 export const MERGE_INTO_GAME_STATE = 'MERGE_INTO_GAME_STATE'
+export const SET_ELEMENT = 'SET_ELEMENT'
 
 //
 // INITIAL STATE
@@ -9,7 +10,8 @@ export const MERGE_INTO_GAME_STATE = 'MERGE_INTO_GAME_STATE'
 
 const intialState = {
   layers: [],
-  mainPlayerCoord: {}
+  mainPlayerCoord: {},
+  elements: {}, // all game elements by element id
 }
 
 //
@@ -22,6 +24,11 @@ export default function game (state = intialState, action) {
     case MERGE_INTO_GAME_STATE:
       return Object.assign({}, state, action.patch)
 
+    case SET_ELEMENT:
+      let stateClone = Object.assign({}, state)
+      stateClone.elements[action.id] = action.element
+      return Object.assign({}, state, stateClone)
+
     default:
       return state
   }
@@ -30,6 +37,14 @@ export default function game (state = intialState, action) {
 //
 // EXPORT
 //
+
+export function setElement (id, element) {
+  return {
+    type: SET_ELEMENT,
+    id,
+    element
+  }
+}
 
 export function mergeIntoGameState (patch) {
   return {
