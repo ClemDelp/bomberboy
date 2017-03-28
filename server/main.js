@@ -214,44 +214,46 @@ class Game {
 				}, 2000)
 				// --------------------------
 				// Delete blocks around
-				const {col, row} = this.getMatrixCoordWithPosition(ghost.x, ghost.y)
-				const coordsAround = {
-					topLeft: [col - 1, row - 1],
-					top: [col, row - 1],
-					topRight: [col + 1, row - 1],
-					left: [col + 1, row],
-					right: [col - 1, row],
-					bottomLeft: [col - 1, row + 1],
-					bottom: [col, row + 1],
-					bottomRight: [col + 1, row + 1]
-				}
-				var coords = []
-				const blocks = Object.keys(coordsAround).reduce((result, key) => {
-					const matrix = this.layers.block.matrix
-					const col = coordsAround[key][0]
-					const row = coordsAround[key][1]
-					if (
-						row < matrix.length &&
-						row > 0 &&
-						col < matrix[0].length &&
-						col > 0
-					) {
-						coords.push({col, row})
-						result.push(matrix[row][col])
+				if (config.map.removeBlockAroundAfterExplosion) {
+					const {col, row} = this.getMatrixCoordWithPosition(ghost.x, ghost.y)
+					const coordsAround = {
+						topLeft: [col - 1, row - 1],
+						top: [col, row - 1],
+						topRight: [col + 1, row - 1],
+						left: [col + 1, row],
+						right: [col - 1, row],
+						bottomLeft: [col - 1, row + 1],
+						bottom: [col, row + 1],
+						bottomRight: [col + 1, row + 1]
 					}
-					return result
-				}, [])
-				// stream
-				Streamy.broadcast('gameStream', {
-					type: 'rm',
-					data: blocks.map((block) => {
-						return Object.assign({}, {id: block.id}, block.val)
+					var coords = []
+					const blocks = Object.keys(coordsAround).reduce((result, key) => {
+						const matrix = this.layers.block.matrix
+						const col = coordsAround[key][0]
+						const row = coordsAround[key][1]
+						if (
+							row < matrix.length &&
+							row > 0 &&
+							col < matrix[0].length &&
+							col > 0
+						) {
+							coords.push({col, row})
+							result.push(matrix[row][col])
+						}
+						return result
+					}, [])
+					// stream
+					Streamy.broadcast('gameStream', {
+						type: 'rm',
+						data: blocks.map((block) => {
+							return Object.assign({}, {id: block.id}, block.val)
+						})
 					})
-				})
-				// Remove blocks
-				coords.forEach((coord) => {
-					this.layers.block.matrix[coord.col][coord.row].val = 0
-				})
+					// Remove blocks
+					coords.forEach((coord) => {
+						this.layers.block.matrix[coord.col][coord.row].val = 0
+					})
+				}
 			}
 		)
 	}

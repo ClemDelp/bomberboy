@@ -366,8 +366,8 @@ class GameCanvas extends React.Component {
             ) {
               var sprite = dynamicElementsById[data.id]
               sprite.animations.play(data.orientation)
-              sprite.x = data.x
-              sprite.y = data.y
+              sprite.body.x = data.x
+              sprite.body.y = data.y
             }
             break;
           // remove element

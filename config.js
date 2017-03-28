@@ -16,7 +16,8 @@ export const config = {
     trees: false,
     depthSort: true,
     topologicalSort: false,
-    physic: true
+    physic: true,
+    removeBlockAroundAfterExplosion: false
   },
 
   isoTilesMap: {
@@ -160,7 +161,7 @@ export const config = {
     orientation: 'down',
     velocity: 5, // px per move
     speed: 100,
-    triesBeforeExplosion: 2,
+    triesBeforeExplosion: 10,
     tileName: 'ghost',
     alpha: 1,
     anchor: 0.5,
@@ -184,11 +185,10 @@ export const config = {
 export const layers = {
   isoTilesMap: {
     elements: [
-      Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'water', frame: 4, isoZ: 0}),
+      // Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'water', frame: 4, isoZ: 0}),
       Object.assign({}, config.isoTilesMap, {color: '#C9DAF8', type: 'grass', frame: 1, isoZ: 5}),
       Object.assign({}, config.isoTilesMap, {color: '#4A86E8', type: 'grass', frame: 0, isoZ: 5}),
       Object.assign({}, config.isoTilesMap, {color: '#CFE2F3', type: 'montain', frame: 2, isoZ: 25})
-
     ]
   },
   treesLayers: {
