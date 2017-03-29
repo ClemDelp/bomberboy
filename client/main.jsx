@@ -8,7 +8,7 @@ import Root from './containers/Root'
 import ReactDOM from 'react-dom'
 import {apiRequest} from './utils/api'
 import {mergeIntoGameState, setElement} from './reducers/game'
-
+import {config} from '../config'
 //
 // SAGA
 //
@@ -52,12 +52,18 @@ Meteor.startup(() => {
           ghosts &&
           players &&
           playerId
-        ) store.dispatch(mergeIntoGameState({
-          layers,
-          ghosts,
-          players,
-          playerId
-        }))
+        ) {
+          const elements = Object.assign({}, ghosts, players)
+          store.dispatch(
+            mergeIntoGameState({
+              elements,
+              layers,
+              // ghosts,
+              // players,
+              playerId
+            })
+          )
+        }
       }
     })
 	}
@@ -65,17 +71,18 @@ Meteor.startup(() => {
 
 //
 // STREAM
-Streamy.on('gameStream', function (response) {
-  if (
-    response &&
-    response.type &&
-    response.data
-  ) {
-    const element = response.data
-    store.dispatch(setElement(element.id, element))
-  }
-})
-
+if (config.game.stream) {
+  Streamy.on('gameStream', function (response) {
+    if (
+      response &&
+      response.type &&
+      response.data
+    ) {
+      const element = response.data
+      store.dispatch(setElement(element.id, element))
+    }
+  })
+}
 //
 // DEBUGS
 // Since we don't want all those debug messages

@@ -1,6 +1,7 @@
 export const config = {
   game: {
-    blockTransparency: false
+    blockTransparency: false,
+    stream: false
   },
   map: {
     width: 20000, // the canvas size in px

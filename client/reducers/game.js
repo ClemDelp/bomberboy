@@ -3,6 +3,7 @@
 //
 export const MERGE_INTO_GAME_STATE = 'MERGE_INTO_GAME_STATE'
 export const SET_ELEMENT = 'SET_ELEMENT'
+export const REMOVE_ELEMENT = 'REMOVE_ELEMENT'
 
 //
 // INITIAL STATE
@@ -19,15 +20,21 @@ const intialState = {
 //
 
 export default function game (state = intialState, action) {
+  let stateClone = {}
   switch (action.type) {
 
     case MERGE_INTO_GAME_STATE:
       return Object.assign({}, state, action.patch)
 
     case SET_ELEMENT:
-      let stateClone = Object.assign({}, state)
+      stateClone = Object.assign({}, state)
       stateClone.elements[action.id] = action.element
       return Object.assign({}, state, stateClone)
+
+    case REMOVE_ELEMENT:
+      stateClone = Object.assign({}, state)
+      delete stateClone.elements[action.id]
+      return stateClone
 
     default:
       return state
@@ -43,6 +50,13 @@ export function setElement (id, element) {
     type: SET_ELEMENT,
     id,
     element
+  }
+}
+
+export function removeElement (id) {
+  return {
+    type: REMOVE_ELEMENT,
+    id
   }
 }
 
