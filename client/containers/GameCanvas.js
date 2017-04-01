@@ -111,13 +111,19 @@ class GameCanvas extends React.Component {
     game.load.spritesheet('tile', 'assets/sprites/iso_tiles.png', 103, 103) // width of a element, height
     game.load.spritesheet('tree', 'assets/sprites/tree_tiles.png', 103, 103) // width of a element, height
     // --------------------------------------
+    game.input.keyboard.addKeyCapture([
+      Phaser.Keyboard.LEFT,
+      Phaser.Keyboard.RIGHT,
+      Phaser.Keyboard.UP,
+      Phaser.Keyboard.DOWN,
+      Phaser.Keyboard.SPACEBAR
+    ])
   }
   create () {
     const {game} = this.state
     const {
       layers,
-      ghosts,
-      players,
+      elements,
       playerId
     } = this.props
     // CREATE GROUPS
@@ -143,33 +149,18 @@ class GameCanvas extends React.Component {
         spritesLayers[layerName] = newSpriteLayer
       })
     }
-    game.input.keyboard.addKeyCapture([
-      Phaser.Keyboard.LEFT,
-      Phaser.Keyboard.RIGHT,
-      Phaser.Keyboard.UP,
-      Phaser.Keyboard.DOWN,
-      Phaser.Keyboard.SPACEBAR
-    ])
 
-    if (ghosts) {
-      Object.keys(ghosts).forEach((key) => {
-        const ghost = ghosts[key]
-        // this.addGhost(ghost)
-        const g = this.addElementToMap(ghost, ghost.x, ghost.y)
-      })
-    }
-
-    if (players) {
-      Object.keys(players).forEach((key) => {
-        const player = players[key]
-        // this.addPlayerToMap(game, player, playerId)
-        const p = this.addElementToMap(player, player.x, player.y)
+    if (elements) {
+      Object.keys(elements).forEach((key) => {
+        const element = elements[key]
+        const el = this.addElementToMap(element, element.x, element.y)
       })
     }
   }
-  addExplosion (x, y) {
+  addExplosion (x, y, z) {
+    console.log(x, y, z)
     const {game} = this.state
-    var explosion = game.add.sprite(x, y, 'boom')
+    var explosion = game.add.isoSprite(x, y, z, 'boom')
     explosion.anchor.set(0.5)
     //  Here we add a new animation called 'walk'
     //  Because we didn't give any other parameters
@@ -215,7 +206,7 @@ class GameCanvas extends React.Component {
     )
     el.id = element.id
     el.elementType = val.type
-
+    el.explosion = val.explosion
     if (val.tye === 'player' || val.type === 'ghost') el.scale.setTo(val.scale[0], val.scale[1])
     else el.scale.setTo(val.scale[0], val.scale[1], val.isoZ / 10)
 
@@ -280,13 +271,15 @@ class GameCanvas extends React.Component {
     }
     return el
   }
-  removeElement (element, explosion) {
-    sprite = dynamicElementsById[element.id]
-    if (sprite) {
-      if (explosion) this.addExplosion(element.x, element.y)
+  removeElement (sprite) {
+    if (
+      sprite.elementType === 'player' ||
+      sprite.elementType === 'ghost'
+    ){
+      if (sprite.explosion) this.addExplosion(sprite.body.x, sprite.body.y, sprite.body.z)
       elementsGroup.remove(sprite)
       sprite.destroy()
-      if (textElements[element.id]) textElements[element.id].element.destroy()
+      if (textElements[sprite.id]) textElements[sprite.id].element.destroy()
     }
   }
   getCoord (x, y) {
@@ -299,6 +292,28 @@ class GameCanvas extends React.Component {
   }
   update () {
     const {game} = this.state
+    const {elements} = this.props
+    // ---------------------------------
+    // CREATION LOOP
+    Object.keys(elements).forEach((key) => {
+      const element = elements[key]
+      if (
+        !dynamicElementsById[key] &&
+        element.id !== mainPlayerObj.id
+      ) this.addElementToMap(element)
+    })
+    // ---------------------------------
+    // UPDATE AND REMOVE LOOP
+    elementsGroup.forEach((sprite) => {
+      if (elements[sprite.id]) {
+        const element = elements[sprite.id]
+        if (element.id !== mainPlayerObj.id) {
+          sprite.animations.play(element.orientation)
+          sprite.body.x = element.x
+          sprite.body.y = element.y
+        }
+      } else this.removeElement(sprite)
+    })
     // ---------------------------------
     // UNDERSTAND USER MOVING
     const position = this.getCoord(mainPlayer.isoX, mainPlayer.isoY)
@@ -352,50 +367,8 @@ class GameCanvas extends React.Component {
     }
     // ---------------------------------
     // BUFFERS MANAGERS
-    if (buffer.length > 0) {
-      // const element =
-      buffer.forEach((element) => {
-        buffer.shift()
-        const {type, data} = element
-        switch (type) {
-          // move element
-          case 'mvt':
-            if (
-              data.id != mainPlayerObj.id &&
-              dynamicElementsById[data.id]
-            ) {
-              var sprite = dynamicElementsById[data.id]
-              sprite.animations.play(data.orientation)
-              sprite.body.x = data.x
-              sprite.body.y = data.y
-            }
-            break;
-          // remove element
-          case 'rm':
-            data.forEach((el) => {
-              switch (el.type) {
-                case 'ghost':
-                  // console.log('remove ghost')
-                  this.removeElement(el, true)
-                  break;
-                case 'block':
-                  // console.log('remove block')
-                  this.removeElement(el, false)
-                  break;
-              }
-            })
-            break
-          // add element
-          case 'add':
-            this.addElementToMap(data, data.x, data.y)
-            break
-        }
-      })
-    }
     if (newPlayerBuffer.length > 0) {
       console.log('new player !!!')
-      const newPlayer = newPlayerBuffer.shift()
-      this.addPlayerToMap(game, newPlayer, playerId)
     }
     // --------------------------------
     // BLOCK TRANSPARENCY
@@ -523,15 +496,13 @@ class GameCanvas extends React.Component {
 function mapStateToProps ({
   game: {
     layers,
-    ghosts,
-    players,
+    elements,
     playerId
   }
 }) {
   return {
     layers,
-    ghosts,
-    players,
+    elements,
     playerId
   }
 }

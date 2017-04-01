@@ -7,11 +7,17 @@ import rootReducer from './reducers'
 import Root from './containers/Root'
 import ReactDOM from 'react-dom'
 import {apiRequest} from './utils/api'
-import {mergeIntoGameState, setElement} from './reducers/game'
+import {
+  mergeIntoGameState,
+  setElement,
+  removeElement
+} from './reducers/game'
 import {config} from '../config'
+
 //
 // SAGA
 //
+
 import rootSaga from './sagas'
 import createSagaMiddleware from 'redux-saga'
 const sagaMiddleware = createSagaMiddleware()
@@ -79,7 +85,21 @@ if (config.game.stream) {
       response.data
     ) {
       const element = response.data
-      store.dispatch(setElement(element.id, element))
+      switch (response.type) {
+        case 'mvt':
+          store.dispatch(setElement(element.id, element))
+          break;
+
+        case 'add':
+          console.log('add element')
+          store.dispatch(setElement(element.id, element))
+          break;
+
+        case 'rm':
+          store.dispatch(removeElement(element.id))
+          break;
+
+      }
     }
   })
 }

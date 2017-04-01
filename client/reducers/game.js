@@ -33,7 +33,11 @@ export default function game (state = intialState, action) {
 
     case REMOVE_ELEMENT:
       stateClone = Object.assign({}, state)
-      delete stateClone.elements[action.id]
+      stateClone.elements = Object.keys(stateClone.elements).reduce((result, key) => {
+        const element = stateClone.elements[key]
+        if (element.id !== action.id) result[element.id] = element
+        return result
+      }, {})
       return stateClone
 
     default:
@@ -52,14 +56,12 @@ export function setElement (id, element) {
     element
   }
 }
-
 export function removeElement (id) {
   return {
     type: REMOVE_ELEMENT,
     id
   }
 }
-
 export function mergeIntoGameState (patch) {
   return {
     type: MERGE_INTO_GAME_STATE,
