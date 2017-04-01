@@ -56,6 +56,7 @@ if(Meteor.isServer) {
 		})
 	})
 }
+
 class Game {
   constructor (map) {
 		// PARAMETERS
@@ -155,10 +156,8 @@ class Game {
 			let found = false
 			// while we found free position
 			while (!found) {
-				x = Math.round(Math.random() * config.map.cols)
-				if(x === config.map.cols) x--
-				y = Math.round(Math.random() * config.map.rows)
-				if(y === config.map.rows) y--
+				x = getRandomInt(0, config.map.cols - 1)
+				y = getRandomInt(0, config.map.rows - 1)
 				found = this.isFreePosition(x, y, element)
 			}
 			return {x, y}
@@ -170,7 +169,10 @@ class Game {
 		// Check on all layers
 		const layer = this.layers.block
 		const supportBlockElement = layer.getVal(y, x)
-		if (element.canHover.indexOf(supportBlockElement.type) > -1) {
+		if (
+			supportBlockElement &&
+			element.canHover.indexOf(supportBlockElement.type) > -1
+		) {
 			element.isoZ = supportBlockElement.isoZ + 100
 			return true
 		} else return false
@@ -185,6 +187,10 @@ class Game {
 		const ghost = this.ghostsById[id]
 		const deplacements = ghost.deplacements
 		this.promise(ghost, deplacements)
+		// .catch(function(e) {
+		//   console.error('error: ', e)
+		//   console.error('stack:', e.stack)
+		// })
 		.then(
 			(ghost) => {
 				// RESOLVE
@@ -201,7 +207,7 @@ class Game {
 				// remove ghost
 				Streamy.broadcast('gameStream', {
 					type: 'rm',
-					data: [ghost]
+					data: ghost
 				})
 				delete this.ghostsById[ghost.id]
 				// create new ghost 2 second after
@@ -212,50 +218,10 @@ class Game {
 						data: newGhost
 					})
 				}, 2000)
-				// --------------------------
-				// Delete blocks around
-				if (config.map.removeBlockAroundAfterExplosion) {
-					const {col, row} = this.getMatrixCoordWithPosition(ghost.x, ghost.y)
-					const coordsAround = {
-						topLeft: [col - 1, row - 1],
-						top: [col, row - 1],
-						topRight: [col + 1, row - 1],
-						left: [col + 1, row],
-						right: [col - 1, row],
-						bottomLeft: [col - 1, row + 1],
-						bottom: [col, row + 1],
-						bottomRight: [col + 1, row + 1]
-					}
-					var coords = []
-					const blocks = Object.keys(coordsAround).reduce((result, key) => {
-						const matrix = this.layers.block.matrix
-						const col = coordsAround[key][0]
-						const row = coordsAround[key][1]
-						if (
-							row < matrix.length &&
-							row > 0 &&
-							col < matrix[0].length &&
-							col > 0
-						) {
-							coords.push({col, row})
-							result.push(matrix[row][col])
-						}
-						return result
-					}, [])
-					// stream
-					Streamy.broadcast('gameStream', {
-						type: 'rm',
-						data: blocks.map((block) => {
-							return Object.assign({}, {id: block.id}, block.val)
-						})
-					})
-					// Remove blocks
-					coords.forEach((coord) => {
-						this.layers.block.matrix[coord.col][coord.row].val = 0
-					})
-				}
 			}
-		)
+		).catch(function(e) {
+		  console.error(e)
+		})
 	}
 	promise (ghost, deplacements) {
 		return new Promise((resolve, reject) => {
@@ -306,6 +272,14 @@ class Game {
 				rowIndex = Math.floor((y + (ghostH / 2)) / refSize)
 				break
 		}
+
+		if(
+			colIndex === config.map.cols ||
+			rowIndex === config.map.rows ||
+			colIndex < 0 ||
+			rowIndex < 0
+		) return false
+
 		if (this.isFreePosition(colIndex, rowIndex, ghost)) {
 			ghost.x = x
 			ghost.y = y
@@ -314,3 +288,48 @@ class Game {
 		return false
 	}
 }
+
+
+
+// // --------------------------
+// // Delete blocks around
+// if (config.map.removeBlockAroundAfterExplosion) {
+// 	const {col, row} = this.getMatrixCoordWithPosition(ghost.x, ghost.y)
+// 	const coordsAround = {
+// 		topLeft: [col - 1, row - 1],
+// 		top: [col, row - 1],
+// 		topRight: [col + 1, row - 1],
+// 		left: [col + 1, row],
+// 		right: [col - 1, row],
+// 		bottomLeft: [col - 1, row + 1],
+// 		bottom: [col, row + 1],
+// 		bottomRight: [col + 1, row + 1]
+// 	}
+// 	var coords = []
+// 	const blocks = Object.keys(coordsAround).reduce((result, key) => {
+// 		const matrix = this.layers.block.matrix
+// 		const col = coordsAround[key][0]
+// 		const row = coordsAround[key][1]
+// 		if (
+// 			row < matrix.length &&
+// 			row > 0 &&
+// 			col < matrix[0].length &&
+// 			col > 0
+// 		) {
+// 			coords.push({col, row})
+// 			result.push(matrix[row][col])
+// 		}
+// 		return result
+// 	}, [])
+// 	// stream
+// 	Streamy.broadcast('gameStream', {
+// 		type: 'rm',
+// 		data: blocks.map((block) => {
+// 			return Object.assign({}, {id: block.id}, block.val)
+// 		})
+// 	})
+// 	// Remove blocks
+// 	coords.forEach((coord) => {
+// 		this.layers.block.matrix[coord.col][coord.row].val = 0
+// 	})
+// }
