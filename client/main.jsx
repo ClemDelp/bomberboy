@@ -91,7 +91,6 @@ if (config.game.stream) {
           break;
 
         case 'add':
-          console.log('add element')
           store.dispatch(setElement(element.id, element))
           break;
 

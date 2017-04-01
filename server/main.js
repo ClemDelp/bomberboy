@@ -19,14 +19,34 @@ if(Meteor.isServer) {
 		// GAME
 		const game = new Game()
 		Streamy.on('gameStream', (message) => {
-			if (message.data) {
-				data = message.data
-				if (game.playersById[data.id]) {
-					game.playersById[data.id].x = data.x
-					game.playersById[data.id].y = data.y
+			if (
+				message &&
+				message.type &&
+				message.data
+			) {
+				const data = message.data
+				switch (message.type) {
+
+					case 'rmMainPlayer':
+						if (game.playersById[data.id]) {
+							game.playersById = Object.keys(game.playersById).reduce((newPlayersById, currId) => {
+								const player = game.playersById[currId]
+								if (data.id !== currId) newPlayersById[currId] = player
+								return newPlayersById
+							}, {})
+							game.playersById[data.id].y = data.y
+						}
+						break
+
+					case 'updateMainPlayer':
+						if (game.playersById[data.id]) {
+							game.playersById[data.id].x = data.x
+							game.playersById[data.id].y = data.y
+						}
+						break
 				}
 			}
-		});
+		})
 		game.initGhosts()
 		// ROUTES
 		app.get('/getContextGame', function (req, res) {
@@ -129,7 +149,10 @@ class Game {
 			y: position.y * refSize
 		})
 		this.playersById[newPlayer.id] = newPlayer
-		Streamy.broadcast('newPlayer', {data: newPlayer})
+		Streamy.broadcast('gameStream', {
+			type: 'add',
+			data: newPlayer
+		})
 		return newPlayer
 	}
 	initGhosts () {

@@ -3,13 +3,14 @@ export const config = {
     blockTransparency: false,
     stream: true
   },
+
   map: {
     width: 20000, // the canvas size in px
     height: 20000, // the canvas size in px
     rows: 10, // min 10 for heightmap
     cols: 10, // min 10 for heightmap
     squareSize: 38,
-    defaultGhostNumber: 1,
+    defaultGhostNumber: 0,
     perlin: true,
     isometric: true,
     reverseMap: true,

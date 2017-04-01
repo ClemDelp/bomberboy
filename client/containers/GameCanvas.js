@@ -2,6 +2,11 @@
 // MODULE
 //
 
+// window.onbeforeunload = function(event)
+// {
+//    return confirm("Confirm refresh");
+// };
+
 import React from 'react'
 import {connect} from 'react-redux'
 import {config} from '../../config'
@@ -22,9 +27,6 @@ import {movementController} from '../utils/phaser-movement'
 
 let water = []
 let tree = []
-const BUFFER_LIMIT = 100
-let buffer = []
-let newPlayerBuffer = []
 const refSize = config.map.squareSize
 var dynamicElementsById = {} // --> all the moving elements
 var mainPlayerObj = {}
@@ -37,17 +39,6 @@ const HEIGHT = window.innerHeight
 var bulletTime = 0
 var prevCoord = {x: 0, y: 0}
 var spritesLayers = {}
-
-//
-// STREAMS
-//
-
-Streamy.on('newPlayer', function (response) {
-  if (
-    response &&
-    response.data
-  ) newPlayerBuffer.push(response.data)
-})
 
 //
 // COMPONENT
@@ -148,7 +139,6 @@ class GameCanvas extends React.Component {
     }
   }
   addExplosion (x, y, z) {
-    console.log(x, y, z)
     const {game} = this.state
     var explosion = game.add.isoSprite(x, y, z, 'boom')
     explosion.anchor.set(0.5)
@@ -355,11 +345,6 @@ class GameCanvas extends React.Component {
         w.alpha = Phaser.Math.clamp(1 + (w.isoZ * 0.1), 0.2, 1)
       })
     }
-    // ---------------------------------
-    // BUFFERS MANAGERS
-    if (newPlayerBuffer.length > 0) {
-      console.log('new player !!!')
-    }
     // --------------------------------
     // BLOCK TRANSPARENCY
     if (config.game.blockTransparency) {
@@ -434,15 +419,19 @@ class GameCanvas extends React.Component {
     }
   }
   updateMainPlayerObj () {
-    mainPlayerObj.x = mainPlayer.x
-    mainPlayerObj.y = mainPlayer.y
+    mainPlayerObj.x = mainPlayer.body.x
+    mainPlayerObj.y = mainPlayer.body.y
+    mainPlayerObj.z = mainPlayer.body.z
     // for client
     Streamy.broadcast('gameStream', {
       type: 'mvt',
       data: mainPlayerObj
     })
     // for server
-    Streamy.emit('gameStream', { data: mainPlayerObj })
+    Streamy.emit('gameStream', {
+      type: 'updateMainPlayerObj',
+      data: mainPlayerObj
+    })
   }
   renderCanvas () {
     const {game} = this.state
@@ -470,6 +459,17 @@ class GameCanvas extends React.Component {
       }
     )
     this.setState({game})
+    // before leave remove user
+    window.onbeforeunload = (event) => {
+      Streamy.broadcast('gameStream', {
+        type: 'rm',
+        data: mainPlayerObj
+      })
+      Streamy.emit('gameStream', {
+        type: 'rmMainPlayer',
+        data: mainPlayerObj
+      })
+    }
   }
 
   render () {
