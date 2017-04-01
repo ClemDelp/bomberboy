@@ -49,16 +49,6 @@ Streamy.on('newPlayer', function (response) {
   ) newPlayerBuffer.push(response.data)
 })
 
-// Streamy.on('gameStream', function (response) {
-//   if (
-//     response &&
-//     response.type &&
-//     response.data &&
-//     buffer.length < BUFFER_LIMIT
-//   ) buffer.push(response)
-//   if(buffer.length === BUFFER_LIMIT) console.log('buffer full')
-// })
-
 //
 // COMPONENT
 //
