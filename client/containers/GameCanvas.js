@@ -12,7 +12,7 @@ import {connect} from 'react-redux'
 import {config} from '../../config'
 import {apiRequest} from '../utils/api'
 import {mapLoading} from '../utils/mapLoading'
-import {mergeIntoGameState} from '../reducers/game'
+import {mergeIntoGameState, patchElement, removeGameAction} from '../reducers/game'
 import {
   getNewCoords,
   print2DMatrix,
@@ -243,7 +243,10 @@ class GameCanvas extends React.Component {
           // Set up our controls.
           cursors = game.input.keyboard.createCursorKeys()
           var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
-          space.onDown.add(() => {mainPlayer.body.velocity.z = val.body.velocity.z}, this)
+          space.onDown.add(() => {
+            mainPlayer.body.velocity.z = val.body.velocity.z
+            this.broadcastGameAction({type: 'jump', elementId: mainPlayer.id})
+          }, this)
         } else {
           dynamicElementsById[el.id] = el
         }
@@ -272,7 +275,11 @@ class GameCanvas extends React.Component {
   }
   update () {
     const {game} = this.state
-    const {elements} = this.props
+    const {
+      elements,
+      gameActions,
+      removeGameAction
+    } = this.props
     // ---------------------------------
     // CREATION LOOP
     Object.keys(elements).forEach((key) => {
@@ -281,6 +288,31 @@ class GameCanvas extends React.Component {
         !dynamicElementsById[key] &&
         element.id !== mainPlayerObj.id
       ) this.addElementToMap(element)
+    })
+    // ---------------------------------
+    // ACTION LOOP
+    Object.keys(gameActions).forEach((actionId) => {
+      const action = gameActions[actionId]
+      if (action.elementId !== mainPlayerObj.id) {
+        removeGameAction(actionId)
+        switch (action.type) {
+          case 'jump':
+            const sprite = dynamicElementsById[action.elementId]
+            const element = elements[action.elementId]
+            if (
+              sprite &&
+              sprite.body &&
+              sprite.body.velocity &&
+              element &&
+              element.body &&
+              element.body.velocity
+            ) {
+              console.log('jump !', element.body.velocity.z)
+              sprite.body.velocity.z = element.body.velocity.z
+            }
+            break;
+        }
+      }
     })
     // ---------------------------------
     // UPDATE AND REMOVE LOOP
@@ -368,7 +400,7 @@ class GameCanvas extends React.Component {
     movementController (
       cursors,
       mainPlayer,
-      this.updateMainPlayerObj
+      this.brodcastPlayerUpdate
     )
     // ---------------------
     // Our collision and sorting code again.
@@ -418,10 +450,15 @@ class GameCanvas extends React.Component {
       y: currentCoord.y - prevCoord.y
     }
   }
-  updateMainPlayerObj () {
+  broadcastGameAction (gameAction) {
+    Streamy.broadcast('gameStream', {
+      type: 'gameAction',
+      data: gameAction
+    })
+  }
+  brodcastPlayerUpdate () {
     mainPlayerObj.x = mainPlayer.body.x
     mainPlayerObj.y = mainPlayer.body.y
-    mainPlayerObj.z = mainPlayer.body.z
     // for client
     Streamy.broadcast('gameStream', {
       type: 'mvt',
@@ -429,7 +466,7 @@ class GameCanvas extends React.Component {
     })
     // for server
     Streamy.emit('gameStream', {
-      type: 'updateMainPlayerObj',
+      type: 'brodcastPlayerUpdate',
       data: mainPlayerObj
     })
   }
@@ -487,19 +524,23 @@ function mapStateToProps ({
   game: {
     layers,
     elements,
-    playerId
+    playerId,
+    gameActions
   }
 }) {
   return {
     layers,
     elements,
-    playerId
+    playerId,
+    gameActions
   }
 }
 
 export default connect(
   mapStateToProps,
   {
-    mergeIntoGameState
+    mergeIntoGameState,
+    patchElement,
+    removeGameAction
   }
 )(GameCanvas)

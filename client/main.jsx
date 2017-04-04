@@ -9,8 +9,9 @@ import ReactDOM from 'react-dom'
 import {apiRequest} from './utils/api'
 import {
   mergeIntoGameState,
-  setElement,
-  removeElement
+  patchElement,
+  removeElement,
+  addGameAction
 } from './reducers/game'
 import {config} from '../config'
 
@@ -84,18 +85,22 @@ if (config.game.stream) {
       response.type &&
       response.data
     ) {
-      const element = response.data
+      const data = response.data
       switch (response.type) {
         case 'mvt':
-          store.dispatch(setElement(element.id, element))
+          store.dispatch(patchElement(data.id, data))
           break;
 
         case 'add':
-          store.dispatch(setElement(element.id, element))
+          store.dispatch(patchElement(data.id, data))
           break;
 
         case 'rm':
-          store.dispatch(removeElement(element.id))
+          store.dispatch(removeElement(data.id))
+          break;
+
+        case 'gameAction':
+          store.dispatch(addGameAction(data.elementId, data))
           break;
 
       }
