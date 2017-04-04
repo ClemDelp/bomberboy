@@ -229,7 +229,7 @@ class GameCanvas extends React.Component {
 
       case 'ghost':
         this.attachTextToSprite(el, val)
-        dynamicElementsById[el.id] = el
+        // dynamicElementsById[el.id] = el
         break
 
       case 'player':
@@ -248,10 +248,11 @@ class GameCanvas extends React.Component {
             this.broadcastGameAction({type: 'jump', elementId: mainPlayer.id})
           }, this)
         } else {
-          dynamicElementsById[el.id] = el
+          // dynamicElementsById[el.id] = el
         }
         break
     }
+    dynamicElementsById[el.id] = el
     return el
   }
   removeElement (sprite) {
@@ -287,7 +288,9 @@ class GameCanvas extends React.Component {
       if (
         !dynamicElementsById[key] &&
         element.id !== mainPlayerObj.id
-      ) this.addElementToMap(element)
+      ) {
+        this.addElementToMap(element)
+      }
     })
     // ---------------------------------
     // ACTION LOOP
@@ -307,7 +310,6 @@ class GameCanvas extends React.Component {
               element.body &&
               element.body.velocity
             ) {
-              console.log('jump !', element.body.velocity.z)
               sprite.body.velocity.z = element.body.velocity.z
             }
             break;
