@@ -1,6 +1,5 @@
 export const config = {
   game: {
-    blockTransparency: false,
     stream: true
   },
 

@@ -380,24 +380,6 @@ class GameCanvas extends React.Component {
       })
     }
     // --------------------------------
-    // BLOCK TRANSPARENCY
-    if (config.game.blockTransparency) {
-      blocks.forEach((block) => {
-        if (block) {
-          if (
-            mainPlayer.x < block.x + refSize &&
-            mainPlayer.x >= block.x &&
-            mainPlayer.y > block.y - refSize &&
-            mainPlayer.y <= block.y
-          ) {
-            game.add.tween(block).to( { alpha: 0.5 }, 100, Phaser.Easing.Linear.None, true)
-          } else {
-            game.add.tween(block).to( { alpha: 1 }, 100, Phaser.Easing.Linear.None, true)
-          }
-        }
-      })
-    }
-    // --------------------------------
     // Move the player at this speed.
     movementController (
       cursors,
