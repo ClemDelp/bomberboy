@@ -111,7 +111,7 @@ class GameCanvas extends React.Component {
     elementsGroup = game.add.physicsGroup();
     // we won't really be using IsoArcade physics, but I've enabled it anyway so the debug bodies can be seen
     elementsGroup.physicsBodyType = Phaser.Plugin.Isometric.ISOARCADE
-    // elementsGroup.enableBody = true
+    elementsGroup.enableBody = true
     // RENDER MAP LAYERS
     if (layers) {
       Object.keys(layers).forEach((layerName, index) => {
@@ -122,7 +122,7 @@ class GameCanvas extends React.Component {
             const element = layer.matrix[y][x]
             const refSize = layer.refSize
             if (element.val && element.val.type) {
-              // const newSprite = this.addElementToMap(element, x, y)
+              const newSprite = this.addElementToMap(element, x, y)
               // newSpriteLayer[y][x] = newSprite
             }
           }
@@ -282,6 +282,9 @@ class GameCanvas extends React.Component {
       removeGameAction
     } = this.props
     // ---------------------------------
+    // COLLISIONS
+    if (config.map.physic) game.physics.isoArcade.collide(elementsGroup)
+    // ---------------------------------
     // CREATION LOOP
     Object.keys(elements).forEach((key) => {
       const element = elements[key]
@@ -387,8 +390,7 @@ class GameCanvas extends React.Component {
       this.brodcastPlayerUpdate
     )
     // ---------------------
-    // Our collision and sorting code again.
-    if (config.map.physic) game.physics.isoArcade.collide(elementsGroup)
+    // DEPHTSORT
     if (config.map.depthSort) {
       if (config.map.topologicalSort) game.iso.topologicalSort(elementsGroup)
       else game.iso.simpleSort(elementsGroup)
