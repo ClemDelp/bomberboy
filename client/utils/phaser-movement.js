@@ -1,7 +1,8 @@
 export function movementController (
   cursors,
   mainPlayer,
-  updateMainPlayerObj
+  mainPlayerObj,
+  brodcastPlayerUpdate
 ) {
   // --------------------------------
   // Move the player at this speed.
@@ -10,52 +11,61 @@ export function movementController (
   mainPlayer.body.velocity.y = 0
 
   if (cursors.up.isDown && cursors.left.isDown) {
-    mainPlayer.animations.play('top')
+    movementAnimation(mainPlayer, 'top')
     mainPlayer.body.velocity.x = -speed
-    updateMainPlayerObj()
   }
   else if (cursors.up.isDown && cursors.right.isDown) {
-    mainPlayer.animations.play('right')
+    movementAnimation(mainPlayer, 'right')
     mainPlayer.body.velocity.y = -speed
-    updateMainPlayerObj()
+    brodcastPlayerUpdate()
   }
   else if (cursors.down.isDown && cursors.left.isDown) {
-    mainPlayer.animations.play('left')
+    movementAnimation(mainPlayer, 'left')
     mainPlayer.body.velocity.y = speed
-    updateMainPlayerObj()
+    brodcastPlayerUpdate()
   }
   else if (cursors.down.isDown && cursors.right.isDown) {
-    mainPlayer.animations.play('right')
+    movementAnimation(mainPlayer, 'right')
     mainPlayer.body.velocity.x = speed
-    updateMainPlayerObj()
+    brodcastPlayerUpdate()
   }
   else if (cursors.up.isDown) {
-    mainPlayer.animations.play('top')
+    movementAnimation(mainPlayer, 'top')
     mainPlayer.body.velocity.x = -speed
     mainPlayer.body.velocity.y = -speed
-    updateMainPlayerObj()
+    brodcastPlayerUpdate()
   }
   else if (cursors.down.isDown) {
-    mainPlayer.animations.play('bottom')
+    movementAnimation(mainPlayer, 'bottom')
     mainPlayer.body.velocity.x = speed
     mainPlayer.body.velocity.y = speed
-    updateMainPlayerObj()
+    brodcastPlayerUpdate()
   }
   else if (cursors.left.isDown) {
-      mainPlayer.animations.play('left')
+      movementAnimation(mainPlayer, 'left')
       mainPlayer.body.velocity.x = -speed + 100
       mainPlayer.body.velocity.y = speed - 100
-      updateMainPlayerObj()
+      brodcastPlayerUpdate()
   }
   else if (cursors.right.isDown) {
-    mainPlayer.animations.play('right')
+    movementAnimation(mainPlayer, 'right')
     mainPlayer.body.velocity.x = speed - 100
     mainPlayer.body.velocity.y = -speed + 100
-    updateMainPlayerObj()
+    brodcastPlayerUpdate()
   }
   // Stop player animation
   if (
     mainPlayer.body.velocity.x === 0 &&
     mainPlayer.body.velocity.y === 0
-  ) mainPlayer.animations.stop()
+  ) {
+    movementAnimation(mainPlayer, 'stop')
+    if (mainPlayerObj.orientation !== 'stop') brodcastPlayerUpdate()
+  }
+
+}
+
+export function movementAnimation (sprite, orientation) {
+  if (orientation === 'stop') sprite.animations.stop()
+  sprite.animations.play(orientation)
+  sprite.orientation = orientation
 }

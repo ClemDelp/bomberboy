@@ -1,25 +1,27 @@
 //
-// MODULE
+// IMPORT
 //
-
-// window.onbeforeunload = function(event)
-// {
-//    return confirm("Confirm refresh");
-// };
 
 import React from 'react'
 import {connect} from 'react-redux'
 import {config} from '../../config'
 import {apiRequest} from '../utils/api'
 import {mapLoading} from '../utils/mapLoading'
-import {mergeIntoGameState, patchElement, removeGameAction} from '../reducers/game'
+import {
+  mergeIntoGameState,
+  patchElement,
+  removeGameAction
+} from '../reducers/game'
 import {
   getNewCoords,
   print2DMatrix,
   getCoordsAround,
   createLayer
 } from '../utils/smartLayers'
-import {movementController} from '../utils/phaser-movement'
+import {
+  movementController,
+  movementAnimation
+} from '../utils/phaser-movement'
 
 //
 // ENV
@@ -201,7 +203,6 @@ class GameCanvas extends React.Component {
         )
       })
     }
-
     el.frame = val.frame
     el.alpha = 0 //val.alpha
     game.add.tween(el).to( { alpha: val.alpha }, 1000, Phaser.Easing.Linear.None, true)
@@ -325,9 +326,13 @@ class GameCanvas extends React.Component {
       if (elements[sprite.id]) {
         const element = elements[sprite.id]
         if (element.id !== mainPlayerObj.id) {
-          sprite.animations.play(element.orientation)
           sprite.body.x = element.x
           sprite.body.y = element.y
+          // Animation
+          if (sprite.orientation !== element.orientation) {
+            sprite.animations.play(element.orientation)
+            movementAnimation(sprite, element.orientation)
+          }
         }
       } else this.removeElement(sprite)
     })
@@ -387,6 +392,7 @@ class GameCanvas extends React.Component {
     movementController (
       cursors,
       mainPlayer,
+      mainPlayerObj,
       this.brodcastPlayerUpdate
     )
     // ---------------------
@@ -443,8 +449,10 @@ class GameCanvas extends React.Component {
     })
   }
   brodcastPlayerUpdate () {
+    console.log('broadCast user update...', mainPlayer.orientation)
     mainPlayerObj.x = mainPlayer.body.x
     mainPlayerObj.y = mainPlayer.body.y
+    mainPlayerObj.orientation = mainPlayer.orientation
     // for client
     Streamy.broadcast('gameStream', {
       type: 'mvt',

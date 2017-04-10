@@ -103,7 +103,7 @@ export const config = {
     },
     size: [27, 40],
     scale: [1.25, 1.25],
-    orientation: 'down',
+    orientation: 'stop',
     tileName: 'dude',
     alpha: 1,
     anchor: 0.5,
@@ -157,7 +157,7 @@ export const config = {
     },
     size: [32, 32],
     scale: [0.75, 0.75],
-    orientation: 'down',
+    orientation: 'bottom',
     velocity: 5, // px per move
     speed: 100,
     triesBeforeExplosion: 2,

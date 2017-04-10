@@ -8,7 +8,6 @@ class Element {
     this.x = null
     this.y = null
     this.id = guid()
-    this.deplacements = ['down','right','up','left']
   }
   setPosition (position) {
     this.x = position.x
@@ -22,6 +21,7 @@ export class Ghost extends Element {
     Object.keys(config.ghost).forEach((key) => {
       this[key] = config.ghost[key]
     })
+    this.deplacements = Object.keys(config.ghost.animations)
   }
 }
 
@@ -31,5 +31,6 @@ export class Player extends Element {
     Object.keys(config.player).forEach((key) => {
       this[key] = config.player[key]
     })
+    this.deplacements = Object.keys(config.player.animations)
   }
 }
