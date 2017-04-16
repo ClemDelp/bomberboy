@@ -15,7 +15,8 @@ const intialState = {
   layers: [],
   mainPlayerCoord: {},
   elements: {}, // all game elements by element id
-  gameActions: {}
+  gameActions: {},
+  chatInputValue: ''
 }
 
 //

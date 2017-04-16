@@ -24,7 +24,7 @@ export const config = {
   isoTilesMap: {
     name: 'isoTilesMap',
     type: 'block',
-    size: [824, 103],
+    size: [824, 103],
     scale: [
       0.7, // x = (38 * 8 el / 1024) + 0.25
       0.7 // x = (38 * 7 el / 896) + 0.25
@@ -51,7 +51,7 @@ export const config = {
     name: 'treesLayers',
     type: 'tree',
     canHover: ['grass', 'montain'],
-    size: [824, 103],
+    size: [824, 103],
     scale: [
       0.65, // x = (38 * 8 el / 1024) + 0.25
       0.65 // x = (38 * 7 el / 896) + 0.25
