@@ -6,7 +6,6 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {config} from '../../config'
 import {apiRequest} from '../utils/api'
-import {mapLoading} from '../utils/mapLoading'
 import {
   mergeIntoGameState,
   patchElement,
@@ -14,7 +13,6 @@ import {
 } from '../reducers/game'
 import {
   getNewCoords,
-  print2DMatrix,
   getCoordsAround,
   createLayer
 } from '../utils/smartLayers'
@@ -28,7 +26,6 @@ import {
 //
 
 let water = []
-let tree = []
 const refSize = config.map.squareSize
 var dynamicElementsById = {} // --> all the moving elements
 var mainPlayerObj = {}
@@ -106,11 +103,10 @@ class GameCanvas extends React.Component {
     const {game} = this.state
     const {
       layers,
-      elements,
-      playerId
+      elements
     } = this.props
     // CREATE GROUPS
-    elementsGroup = game.add.physicsGroup();
+    elementsGroup = game.add.physicsGroup()
     // we won't really be using IsoArcade physics, but I've enabled it anyway so the debug bodies can be seen
     elementsGroup.physicsBodyType = Phaser.Plugin.Isometric.ISOARCADE
     elementsGroup.enableBody = true
@@ -122,7 +118,6 @@ class GameCanvas extends React.Component {
         for (var y = 0; y < layer.matrix.length; y++) {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
-            const refSize = layer.refSize
             if (element.val && element.val.type) {
               const newSprite = this.addElementToMap(element, x, y)
               // newSpriteLayer[y][x] = newSprite
@@ -136,7 +131,7 @@ class GameCanvas extends React.Component {
     if (elements) {
       Object.keys(elements).forEach((key) => {
         const element = elements[key]
-        const el = this.addElementToMap(element, element.x, element.y)
+        this.addElementToMap(element, element.x, element.y)
       })
     }
   }
@@ -148,7 +143,7 @@ class GameCanvas extends React.Component {
     //  Because we didn't give any other parameters
     // it's going to make an animation from all available
     // frames in the 'mummy' sprite sheet
-    var boom = explosion.animations.add('boom')
+    explosion.animations.add('boom')
     //  And this starts the animation playing by using its key ("walk")
     //  30 is the frame rate (30fps)
     //  true means it will loop when it finishes
@@ -159,11 +154,11 @@ class GameCanvas extends React.Component {
     const text = element.name
     const {game} = this.state
     var style = {
-      font: "15px Arial",
-      fill: "#ff0044",
+      font: '15px Arial',
+      fill: '#ff0044',
       wordWrap: true,
       wordWrapWidth: sprite.width,
-      align: "center"
+      align: 'center'
     }
     let textElement = game.add.text(sprite.x, sprite.y - sprite.height, text, style)
     textElement.anchor.set(0.5)
@@ -172,15 +167,14 @@ class GameCanvas extends React.Component {
       sprite: sprite,
       id: element.id
     }
-
   }
   addElementToMap (element, x, y) {
     const val = element.val ? element.val : element
     const {game, refSize} = this.state
     const {playerId} = this.props
     let el = game.add.isoSprite(
-      (val.type === 'player' || val.type === 'ghost' ) ? x : x * refSize,
-      (val.type === 'player' || val.type === 'ghost' ) ? y : y * refSize,
+      (val.type === 'player' || val.type === 'ghost') ? x : x * refSize,
+      (val.type === 'player' || val.type === 'ghost') ? y : y * refSize,
       val.isoZ,
       val.tileName,
       0,
@@ -204,7 +198,7 @@ class GameCanvas extends React.Component {
       })
     }
     el.frame = val.frame
-    el.alpha = 0 //val.alpha
+    el.alpha = 0 // val.alpha
     game.add.tween(el).to( { alpha: val.alpha }, 1000, Phaser.Easing.Linear.None, true)
     el.anchor.set(val.anchor)
 
@@ -248,8 +242,6 @@ class GameCanvas extends React.Component {
             mainPlayer.body.velocity.z = val.body.velocity.z
             this.broadcastGameAction({type: 'jump', elementId: mainPlayer.id})
           }, this)
-        } else {
-          // dynamicElementsById[el.id] = el
         }
         break
     }
@@ -260,7 +252,7 @@ class GameCanvas extends React.Component {
     if (
       sprite.elementType === 'player' ||
       sprite.elementType === 'ghost'
-    ){
+    ) {
       if (sprite.explosion) this.addExplosion(sprite.body.x, sprite.body.y, sprite.body.z)
       elementsGroup.remove(sprite)
       sprite.destroy()
@@ -316,7 +308,7 @@ class GameCanvas extends React.Component {
             ) {
               sprite.body.velocity.z = element.body.velocity.z
             }
-            break;
+            break
         }
       }
     })
@@ -356,7 +348,7 @@ class GameCanvas extends React.Component {
       }
       const actualAround = getCoordsAround(position, sizeAround + 10)
       const nextAround = getCoordsAround(target, sizeAround)
-      const coordsToLoad = getNewCoords(actualAround, nextAround)
+      // const coordsToLoad = getNewCoords(actualAround, nextAround)
       const coordsToRemove = getNewCoords(nextAround, actualAround)
       const {layers} = this.props
       Object.keys(layers).forEach((layerName, index) => {
@@ -383,13 +375,13 @@ class GameCanvas extends React.Component {
     // WATER MVT
     if (config.map.waterAnimation) {
       water.forEach(function (w) {
-        w.isoZ = (-2 * Math.sin((game.time.now + (w.isoX * 7)) * 0.004)) + (-1 * Math.sin((game.time.now + (w.isoY * 8)) * 0.005));
+        w.isoZ = (-2 * Math.sin((game.time.now + (w.isoX * 7)) * 0.004)) + (-1 * Math.sin((game.time.now + (w.isoY * 8)) * 0.005))
         w.alpha = Phaser.Math.clamp(1 + (w.isoZ * 0.1), 0.2, 1)
       })
     }
     // --------------------------------
     // Move the player at this speed.
-    movementController (
+    movementController(
       cursors,
       mainPlayer,
       mainPlayerObj,
@@ -412,15 +404,15 @@ class GameCanvas extends React.Component {
   }
   addTeleportationAnimation (x, y) {
     const {game} = this.state
-    var teleportation = game.add.sprite(x, y, 'tpt');
+    var teleportation = game.add.sprite(x, y, 'tpt')
     teleportation.anchor.set(0.5)
-    var tpt = teleportation.animations.add('tpt');
-    teleportation.animations.play('tpt', 20, false);
+    teleportation.animations.add('tpt')
+    teleportation.animations.play('tpt', 20, false)
   }
   teleportation (element) {
     const {game} = this.state
     if (game.time.now > bulletTime) {
-      bulletTime = game.time.now + 250;
+      bulletTime = game.time.now + 250
       // GET CONTEXT GAME
       apiRequest('/teleportation', {method: 'POST', body: element}, (response) => {
         if (response.data) {
@@ -466,7 +458,7 @@ class GameCanvas extends React.Component {
   }
   renderCanvas () {
     const {game} = this.state
-    game.debug.text('fps: ' + game.time.fps || '--', 2, 14, "#ffffff");
+    game.debug.text('fps: ' + game.time.fps || '--', 2, 14, '#ffffff')
     // elementsGroup.forEach(function (tile) {
     //     game.debug.body(tile, 'rgba(189, 221, 235, 0.6)', false);
     // });
@@ -486,7 +478,7 @@ class GameCanvas extends React.Component {
         preload: this.preload,
         create: this.create,
         update: this.update,
-        render : this.renderCanvas
+        render: this.renderCanvas
       }
     )
     this.setState({game})
