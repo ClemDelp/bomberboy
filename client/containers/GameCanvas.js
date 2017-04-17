@@ -9,8 +9,9 @@ import {apiRequest} from '../utils/api'
 import {
   mergeIntoGameState,
   patchElement,
-  removeGameAction
-} from '../reducers/game'
+  removeGameAction,
+  addGameAction
+} from '../reducers/reducer-game'
 import {
   getNewCoords,
   getCoordsAround,
@@ -164,14 +165,14 @@ class GameCanvas extends React.Component {
     textElement.anchor.set(0.5)
     textElements[element.id] = {
       element: textElement,
-      sprite: sprite,
+      sprite: sprite, // important to follow the sprite
       id: element.id
     }
   }
   addElementToMap (element, x, y) {
     const val = element.val ? element.val : element
     const {game, refSize} = this.state
-    const {playerId} = this.props
+    const {playerId, addGameAction} = this.props
     let el = game.add.isoSprite(
       (val.type === 'player' || val.type === 'ghost') ? x : x * refSize,
       (val.type === 'player' || val.type === 'ghost') ? y : y * refSize,
@@ -224,7 +225,6 @@ class GameCanvas extends React.Component {
 
       case 'ghost':
         this.attachTextToSprite(el, val)
-        // dynamicElementsById[el.id] = el
         break
 
       case 'player':
@@ -239,8 +239,17 @@ class GameCanvas extends React.Component {
           cursors = game.input.keyboard.createCursorKeys()
           var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR)
           space.onDown.add(() => {
-            mainPlayer.body.velocity.z = val.body.velocity.z
-            this.broadcastGameAction({type: 'jump', elementId: mainPlayer.id})
+            const broadcast = true
+            addGameAction(
+              playerId,
+              broadcast,
+              {
+                type: 'jump',
+                id: playerId
+              }
+            )
+            // mainPlayer.body.velocity.z = val.body.velocity.z
+            // this.broadcastGameAction({type: 'jump', id: mainPlayer.id})
           }, this)
         }
         break
@@ -281,35 +290,37 @@ class GameCanvas extends React.Component {
     // CREATION LOOP
     Object.keys(elements).forEach((key) => {
       const element = elements[key]
-      if (
-        !dynamicElementsById[key] &&
-        element.id !== mainPlayerObj.id
-      ) {
-        this.addElementToMap(element)
-      }
+      if (!dynamicElementsById[key]) this.addElementToMap(element)
     })
     // ---------------------------------
     // ACTION LOOP
     Object.keys(gameActions).forEach((actionId) => {
       const action = gameActions[actionId]
-      if (action.elementId !== mainPlayerObj.id) {
-        removeGameAction(actionId)
-        switch (action.type) {
-          case 'jump':
-            const sprite = dynamicElementsById[action.elementId]
-            const element = elements[action.elementId]
-            if (
-              sprite &&
-              sprite.body &&
-              sprite.body.velocity &&
-              element &&
-              element.body &&
-              element.body.velocity
-            ) {
-              sprite.body.velocity.z = element.body.velocity.z
+      removeGameAction(actionId)
+      const sprite = dynamicElementsById[action.id]
+      const element = elements[action.id]
+      switch (action.type) {
+        case 'chat':
+          console.log('chat --> ', action)
+          this.attachTextToSprite(
+            sprite, {
+              id: action.id,
+              name: action.value
             }
-            break
-        }
+          )
+
+        case 'jump':
+          if (
+            sprite &&
+            sprite.body &&
+            sprite.body.velocity &&
+            element &&
+            element.body &&
+            element.body.velocity
+          ) {
+            sprite.body.velocity.z = element.body.velocity.z
+          }
+          break
       }
     })
     // ---------------------------------
@@ -434,14 +445,7 @@ class GameCanvas extends React.Component {
       y: currentCoord.y - prevCoord.y
     }
   }
-  broadcastGameAction (gameAction) {
-    Streamy.broadcast('gameStream', {
-      type: 'gameAction',
-      data: gameAction
-    })
-  }
   brodcastPlayerUpdate () {
-    console.log('broadCast user update...', mainPlayer.orientation)
     mainPlayerObj.x = mainPlayer.body.x
     mainPlayerObj.y = mainPlayer.body.y
     mainPlayerObj.orientation = mainPlayer.orientation
@@ -527,6 +531,7 @@ export default connect(
   {
     mergeIntoGameState,
     patchElement,
-    removeGameAction
+    removeGameAction,
+    addGameAction
   }
 )(GameCanvas)

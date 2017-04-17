@@ -3,7 +3,7 @@
 //
 
 import { combineReducers } from 'redux'
-import game from './game'
+import game from './reducer-game'
 
 //
 // COMBINE

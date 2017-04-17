@@ -7,7 +7,7 @@ import {connect} from 'react-redux'
 import {
   mergeIntoGameState,
   addGameAction
-} from '../reducers/game'
+} from '../reducers/reducer-game'
 import TextField from 'material-ui/TextField'
 
 //
@@ -35,12 +35,14 @@ class Chat extends React.Component {
           onChange={(event, value) => mergeIntoGameState({chatInputValue: value})}
           onKeyDown={(event) => {
             if (event.keyCode === 13) {
+              const broadcast = true
               addGameAction(
                 playerId,
+                broadcast,
                 {
                   type: 'chat',
                   value: chatInputValue,
-                  elementId: playerId
+                  id: playerId
                 }
               )
               mergeIntoGameState({chatInputValue: ''})

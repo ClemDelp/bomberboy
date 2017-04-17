@@ -12,7 +12,7 @@ import {
   patchElement,
   removeElement,
   addGameAction
-} from './reducers/game'
+} from './reducers/reducer-game'
 import {config} from '../config'
 
 //
@@ -86,23 +86,37 @@ if (config.game.stream) {
       response.data
     ) {
       const data = response.data
-      switch (response.type) {
-        case 'mvt':
-          store.dispatch(patchElement(data.id, data))
-          break;
+      const state = store.getState()
+      if (
+        state.game &&
+        state.game.playerId &&
+        data.id !== state.game.playerId // Do not accept his own broacast !!
+      ) {
+        const broadcast = false
+        switch (response.type) {
+          case 'mvt':
+            store.dispatch(patchElement(data.id, data))
+            break
 
-        case 'add':
-          store.dispatch(patchElement(data.id, data))
-          break;
+          case 'add':
+            store.dispatch(patchElement(data.id, data))
+            break
 
-        case 'rm':
-          store.dispatch(removeElement(data.id))
-          break;
+          case 'rm':
+            store.dispatch(removeElement(data.id))
+            break
 
-        case 'gameAction':
-          store.dispatch(addGameAction(data.elementId, data))
-          break;
+          case 'gameAction':
+            store.dispatch(
+              addGameAction(
+                data.id,
+                broadcast, // important to avoid loop !!
+                data
+              )
+            )
+            break
 
+        }
       }
     }
   })

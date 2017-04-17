@@ -74,10 +74,11 @@ export function patchElement (id, patch) {
     patch
   }
 }
-export function addGameAction (id, gameAction) {
+export function addGameAction (id, broadcast, gameAction) {
   return {
     type: ADD_GAME_ACTION,
     id,
+    broadcast,
     gameAction
   }
 }
