@@ -4,6 +4,8 @@ import Ghost from './Ghost'
 import Player from './Player'
 import { getRandomInt } from './utils'
 import heightmap from 'heightmap-generator'
+import * as Mountains from './Mountains'
+console.log('Mountains --> ', Mountains)
 
 export class Game {
   constructor (map) {
@@ -14,8 +16,6 @@ export class Game {
     // SET BLOCK LAYER
     let blockLayer = new Layer()
     let treesLayers = new Layer()
-    // let tilemap = layers.blockLayer
-    // let tilemap = layers.isoLayers
     let tilemap = layers.isoTilesMap
     if (config.map.perlin) {
       // PERLIN
