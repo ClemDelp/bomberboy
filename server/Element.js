@@ -1,7 +1,7 @@
 import { guid } from './utils'
 import eden from 'node-eden'
 
-export class Element {
+export default class Element {
   constructor () {
     this.name = eden.adam()
     this.x = null

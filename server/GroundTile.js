@@ -1,6 +1,6 @@
 import Element from './Element'
 
-export class GroundTile extends Element {
+export default class GroundTile extends Element {
   constructor () {
     super()
     this.name = 'isoTilesMap'

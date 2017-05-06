@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import bodyParser from 'body-parser'
-import {Game} from './Game'
+import Game from './Game'
 
 if (Meteor.isServer) {
 	Meteor.startup(() => {

@@ -1,22 +1,46 @@
-import Layer from './layer'
-import { config, layers } from '../config'
-import Ghost from './Ghost'
+import { config } from '../config'
+import Layer from './Layer'
+// import Ghost from './Ghost'
 import Player from './Player'
 import { getRandomInt } from './utils'
 import heightmap from 'heightmap-generator'
-import * as Mountains from './Mountains'
-console.log('Mountains --> ', Mountains)
 
-export class Game {
+import * as mountainClasses from './Mountains'
+import * as grassClasses from './Grass'
+import * as waterClasses from './Water'
+
+const setLayers = () => {
+  let layers = {
+    isoTilesMap: {
+      elements: []
+    },
+    treesLayers: {
+      elements: []
+    }
+  }
+  const setIsoTilesMapElements = (elementClasses) => {
+    Object.keys(elementClasses).map((key) => {
+      const elementClass = elementClasses[key]
+      const element = new elementClass()
+      layers.isoTilesMap.elements.push(element)
+    })
+  }
+  setIsoTilesMapElements(mountainClasses)
+  setIsoTilesMapElements(grassClasses)
+  setIsoTilesMapElements(waterClasses)
+  return layers
+}
+
+export default class Game {
   constructor (map) {
     // PARAMETERS
     this.ghostsById = {}
     this.playersById = {}
-    this.layers = {}
+    // this.layers = {}
+    const layers = setLayers()
+    let tilemap = layers.isoTilesMap
     // SET BLOCK LAYER
     let blockLayer = new Layer()
-    let treesLayers = new Layer()
-    let tilemap = layers.isoTilesMap
     if (config.map.perlin) {
       // PERLIN
       let size = config.map.rows / 10
@@ -42,6 +66,7 @@ export class Game {
       }
     }
     // TREES LAYERS
+    let treesLayers = new Layer()
     if (config.map.trees) {
       const treesElements = layers.treesLayers.elements
       for (let yy = 0; yy < blockLayer.rows; yy++) {

@@ -1,9 +1,9 @@
 import {guid} from './utils'
 import {config} from '../config'
+const {map} = config
 
 export default class Layer {
   constructor() {
-    const {map, box} = config
     this.rows = map.rows
 	  this.cols = map.cols
     this.refSize = config.map.squareSize
