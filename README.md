@@ -1,5 +1,8 @@
-# Bomber-pacman
+# Iso.io
+## The connected isometric game!
+Iso.io is a boilerplate for multi-players isometric game build with Phaser
 
-The good mix between bomberman and pacman on multi-players platform
+![alt tag](readmeFiles/bomber-iso-minimap.gif)
+
 
 (•_•)...( •_•)>⌐■-■...(⌐■_■) be cool...
