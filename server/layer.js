@@ -2,6 +2,7 @@ import {guid} from './utils'
 import {config} from '../config'
 const {map} = config
 
+
 export default class Layer {
   constructor() {
     this.rows = map.rows
