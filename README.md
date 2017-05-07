@@ -2,6 +2,8 @@
 ## The connected isometric game boilerplate !
 Iso.io is a boilerplate for multi-players isometric game build with Phaser, inspired by [multipixel-game](https://github.com/ClemDelp/multipixel-game)
 
+It was build to be simple to understand, easy to update/ transform/adapt and easy to deploy
+
 ![alt tag](readmeFiles/bomber-iso-minimap.gif)
 
 ## Live Demos

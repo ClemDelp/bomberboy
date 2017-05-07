@@ -2,6 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import bodyParser from 'body-parser'
 import Game from './Game'
 
+console.log('hellooooooo connard')
+
 if (Meteor.isServer) {
 	Meteor.startup(() => {
 		// Express
