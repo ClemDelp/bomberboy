@@ -1,5 +1,5 @@
 import { config } from '../config'
-import Layer from './Layer'
+import Layer from './layer'
 // import Ghost from './Ghost'
 import Player from './Player'
 import { getRandomInt } from './utils'
