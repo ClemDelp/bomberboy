@@ -120,7 +120,7 @@ class GameCanvas extends React.Component {
           for (var x = 0; x < layer.matrix[y].length; x++) {
             const element = layer.matrix[y][x]
             if (element.val && element.val.type) {
-              const newSprite = this.addElementToMap(element, x, y)
+              // const newSprite = this.addElementToMap(element, x, y)
               // newSpriteLayer[y][x] = newSprite
             }
           }
@@ -301,7 +301,6 @@ class GameCanvas extends React.Component {
       const element = elements[action.id]
       switch (action.type) {
         case 'chat':
-          console.log('chat --> ', action)
           this.attachTextToSprite(
             sprite, {
               id: action.id,

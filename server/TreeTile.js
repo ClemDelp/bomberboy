@@ -1,6 +1,6 @@
 import Element from './Element'
 
-export class TreeTile extends Element {
+export default class TreeTile extends Element {
   constructor () {
     super()
     this.name = 'treesLayers'

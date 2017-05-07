@@ -8,6 +8,7 @@ import heightmap from 'heightmap-generator'
 import * as mountainClasses from './Mountains'
 import * as grassClasses from './Grass'
 import * as waterClasses from './Water'
+import * as treesClasses from './Trees'
 
 const setLayers = () => {
   let layers = {
@@ -28,6 +29,16 @@ const setLayers = () => {
   setIsoTilesMapElements(mountainClasses)
   setIsoTilesMapElements(grassClasses)
   setIsoTilesMapElements(waterClasses)
+
+  const setTreesLayersElements = (elementClasses) => {
+    Object.keys(elementClasses).map((key) => {
+      const elementClass = elementClasses[key]
+      const element = new elementClass()
+      layers.treesLayers.elements.push(element)
+    })
+  }
+  setTreesLayersElements(treesClasses)
+
   return layers
 }
 

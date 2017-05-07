@@ -13,7 +13,7 @@ const Loading = () => {
     <div style={{marginTop: '40%'}}>
       <center>
         <div style={{width: '30%'}}>
-          <h1>BOMBER-PACMAN</h1>
+          <h1>iso.io</h1>
           <LinearProgress mode="indeterminate" />
         </div>
       </center>

@@ -5,15 +5,15 @@ export const config = {
   map: {
     width: 20000, // the canvas size in px
     height: 20000, // the canvas size in px
-    rows: 10, // min 10 for heightmap
-    cols: 10, // min 10 for heightmap
+    rows: 30, // min 10 for heightmap
+    cols: 30, // min 10 for heightmap
     squareSize: 38,
     defaultGhostNumber: 0,
     perlin: true,
     isometric: true,
     reverseMap: true,
     waterAnimation: true,
-    trees: false,
+    trees: true,
     depthSort: true,
     topologicalSort: false,
     physic: true,

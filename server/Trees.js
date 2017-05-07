@@ -1,4 +1,4 @@
-import TreeTile from './GroundTile'
+import TreeTile from './TreeTile'
 
 export class Tree1 extends TreeTile {
   constructor () {
