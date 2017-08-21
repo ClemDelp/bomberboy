@@ -1,6 +1,10 @@
 {
-  "name": "ios.io",
+  "name": "bomberboy",
+  "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "8.4.0"
+  },
   "scripts": {
     "start": "meteor run"
   },
